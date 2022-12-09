@@ -51,6 +51,16 @@ The generated code only works correctly some of the times."
     }
   })
 
+  # Switch to Main tab when Submit button is clicked
+  observeEvent(input$submit_button, {
+    updateTabsetPanel(
+      session, 
+      "tabs",
+      selected = "Main"
+    )
+  })
+
+
   user_data <- reactive({
     req(input$user_file)
     in_file <- input$user_file
@@ -161,7 +171,7 @@ The generated code only works correctly some of the times."
       response <- create_completion(
         engine_id = language_model,
         prompt = prepared_request,
-        openai_api_key = Sys.getenv("OPEN_API_KEY"),
+        openai_api_key = api_key,
         max_tokens = 500
       )
       api_time <- difftime(
@@ -189,7 +199,6 @@ The generated code only works correctly some of the times."
           time = round(api_time, 0)
         )
       )
-
     })
   })
 
@@ -239,23 +248,40 @@ The generated code only works correctly some of the times."
   output$usage <- renderText({
     req(openAI_response()$cmd)
 
+    e <- ""
+    if(code_error()) {
+      e <- " !!Error!! "
+    }
     paste0(
-      counter$requests, ". ",
-      "Cumulative API Cost=$",
-      sprintf("%6.4f", counter$tokens * 2e-5),
-      ", Tokens:", counter$tokens
-#      ,"\n  API time: ",
-#      openAI_response()$time,
-#      " sec."
+      counter$requests, ": ",
+      openAI_response()$response$usage$completion_tokens,
+      " tokens, ",
+      openAI_response()$time,
+      " second(s)",
+      e
 #      " Type: ",
 #      paste0(class(run_result()), collapse = "/"),
 #      " Length:",
 #      length(run_result())
-
-
     )
-
   })
+
+  output$total_cost <- renderText({
+    if(input$submit_button == 0) {
+      return("OpenAI charges 0.2¢ per 1k tokens, 
+        the number of words in the request and 
+        the response."
+      )
+    } else {
+    req(openAI_response()$cmd)
+      paste0(
+        "Cumulative API Cost: ",
+        sprintf("%6.2f", counter$tokens * 2e-3),
+        "¢"
+      )
+    }
+  })
+
 
  # Defining & initializing the reactiveValues object
   counter <- reactiveValues(tokens = 0, requests = 0)
@@ -456,8 +482,7 @@ The generated code only works correctly some of the times."
         Rmd_script,
         "** Error **  \n"
       )
-    } 
-
+    }
 
     return(Rmd_script)
 

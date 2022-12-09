@@ -7,11 +7,11 @@ library(gridExtra)
 # Global variables
 ###################################################
 
-uploaded_data <- "Upload" 
-min_query_length <- 10  # minimum # of characters
+uploaded_data <- "Upload"
+min_query_length <- 6  # minimum # of characters
 max_query_length <- 500 # max # of characters
 language_model <- "text-davinci-003"
-pdf(NULL)
+
 #' Move an element to the front of a vector
 #'
 #' The response from GPT3 sometimes contains strings that are not R commands.
@@ -190,3 +190,20 @@ jokes <- c(
   "Why do statisticians like playing with their data? Because they have mean jokes. --ChatGPT",
   "Why do statisticians have a tough time at parties? Because they're always trying to fit in. --ChatGPT"
 )
+
+# get API key from environment variable.
+api_key <- Sys.getenv("OPEN_API_KEY")
+
+# If there is an key file in the current folder, use that instead.
+if (file.exists("api_key.txt")) {
+  api_key_file <- readLines("api_key.txt")
+  # remove spaces
+  api_key_file <- gsub(" ", "", api_key_file)
+
+  # if 51 characters, use the one in the file
+  if (nchar(api_key_file) == 51) {
+    api_key <- api_key_file
+  }
+}
+
+# additionally users can paste their API key.

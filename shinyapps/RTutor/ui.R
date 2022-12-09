@@ -72,15 +72,19 @@ ui <- fluidPage(
         )
       ),
       br(), br(),
-      htmlOutput("usage")
+      textOutput("usage"),
+      textOutput("total_cost"),
+      textInput("api_key", label = h3("Your OpenAI API Key:"), value = "sk-...nOiN"),
     ),
 
     # Show a plot of the generated distribution
     mainPanel(
 
       tabsetPanel(
-        type = "tabs",
-        tabPanel("Main",
+        id = "tabs",
+        tabPanel(
+          title = "Main",
+          value = "Main",
           h4("AI generated R code:"),
           verbatimTextOutput("openAI"),
           br(), br(),
@@ -90,11 +94,15 @@ ui <- fluidPage(
           tableOutput("data_table")
         ),
 
-        tabPanel("Log",
+        tabPanel(
+          title = "Log",
+          value = "Log",
           verbatimTextOutput("rmd_chuck_output")
         ),
 
-        tabPanel("About",
+        tabPanel(
+          title = "About",
+          value = "About",
           h5("RTutor uses ",
             a(
               "OpenAI's",
