@@ -237,17 +237,18 @@ The generated code only works correctly some of the times."
         openai_api_key = api_key_session(),
         max_tokens = 500
       )
+
       api_time <- difftime(
         Sys.time(),
         start_time,
         units = "secs"
       )[[1]]
 
-      # if more than 10 requests, slow down.
-      if(counter$requests > 20) {
+      # if more than 10 requests, slow down. Only on server.
+      if(counter$requests > 20 && file.exists(on_server)) {
         Sys.sleep( counter$requests / 5 + runif(1, 0, 5))
       }
-      if(counter$requests > 50) {
+      if(counter$requests > 50 && file.exists(on_server)) {
         Sys.sleep( counter$requests / 10 + runif(1, 0, 10))
       }
 
@@ -267,6 +268,7 @@ The generated code only works correctly some of the times."
 
     # Pop-up modal for gene assembl information ----
     observe({
+      req(file.exists(on_server))
       if(counter$requests %% 10 == 0 && counter$requests != 0) {
         shiny::showModal(
           shiny::modalDialog(
@@ -361,37 +363,31 @@ The generated code only works correctly some of the times."
     tryCatch(
       eval(parse(text = openAI_response()$cmd)),
       error = function(e) {
-        return(
-          list(
-            value = -1,
-            message = capture.output(print(e$message)),
-            error_status = TRUE
-          )
+        list(
+          value = -1,
+          message = capture.output(print(e$message)),
+          error_status = TRUE
         )
       }
     )
   })
 
+  # just capture the screen output
+  output$console_output <- renderText({
+    req(openAI_response()$cmd)
+    out <- capture.output(
+        eval(parse(text = openAI_response()$cmd))
+    )
+    paste(out, collapse = "\n")
+  })
+  
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
     req(run_result())
 
     # if error, dummy plot with message
     if(code_error()) {
-      grid::grid.newpage()
-          grid::grid.text(
-            paste(
-              "Error: ",
-              run_result()$message,
-              "\nPlease try again by click Re-submit."
-            ),
-            x = 0.5,
-            y = 0.85,
-            gp = grid::gpar(
-              col = "red",
-              fontsize = 15
-            )
-          )
+      return(NULL)
     } else {
       run_result() # show plot
     }
@@ -439,10 +435,12 @@ The generated code only works correctly some of the times."
 
     # if the prompt include the "plot", generate a plot.
     # otherwise run statistical analysis.
+    keywords_for_plot <- "plot|chart|tree|graph|map"
     is_plot <- sum(
       grepl(
-        "plot|chart|tree|graph|map",
-        openAI_response()$cmd, 
+        keywords_for_plot,
+        #remove comments, which might contain these keywords
+        gsub("#.*\n", "", openAI_response()$cmd),
         ignore.case = TRUE
       )
     ) > 0
@@ -451,7 +449,7 @@ The generated code only works correctly some of the times."
      (
       sum(
           grepl(
-            "plot|chart|tree|graph|map",
+            keywords_for_plot,
             openAI_prompt(),
             ignore.case = TRUE
           )
@@ -554,7 +552,6 @@ The generated code only works correctly some of the times."
 
 output$rmd_chuck_output <- renderText({
   req(Rmd_chuck())
-  #Rmd_chuck()
   Rmd_total$code
 })
 

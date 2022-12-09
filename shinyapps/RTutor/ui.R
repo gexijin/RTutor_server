@@ -121,7 +121,9 @@ ui <- fluidPage(
           verbatimTextOutput("openAI"),
           br(), br(),
           h4("Results:"),
+          verbatimTextOutput("console_output"),
           uiOutput("results_ui"),
+
           br(), br(),
           tableOutput("data_table")
         ),

@@ -1,3 +1,3 @@
-styler::style_file("app.R"); 
+styler::style_file("app.R")
 
 shiny::runApp("shinyapps/Rtutor/")
