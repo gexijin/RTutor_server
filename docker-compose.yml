@@ -4,7 +4,7 @@ services:
     build: .
     image: webapp
     env_file:
-     - ../api.env
+     - api.env
     expose:
       - "3838"
     volumes:
