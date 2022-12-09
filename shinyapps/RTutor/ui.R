@@ -132,6 +132,6 @@ ui <- fluidPage(
         )
       )
     )
-  )
-  ,tags$head(includeScript("ga.js")) # tracking usage with Google analytics
+  ),
+  tags$head(includeHTML(("ga.html")))
 )
