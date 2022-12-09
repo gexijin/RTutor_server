@@ -410,6 +410,17 @@ The generated code only works correctly some of the times."
     }
   })
 
+  # using this some of the plots does not show up.
+  output$results_ui <- renderUI({
+    req(openAI_response()$cmd)
+
+    if (code_error()) {
+      return(NULL)
+    } else {
+      plotOutput("result_plot")
+    }
+  })
+
   # Error when run the generated code?
   code_error <- reactive({
     req(!is.null(run_result()))
@@ -428,39 +439,6 @@ The generated code only works correctly some of the times."
       }
     )
     return(error_status)
-  })
-
-  output$results_ui <- renderUI({
-    req(openAI_response()$cmd)
-
-    # if the prompt include the "plot", generate a plot.
-    # otherwise run statistical analysis.
-    keywords_for_plot <- "plot|chart|tree|graph|map"
-    is_plot <- sum(
-      grepl(
-        keywords_for_plot,
-        #remove comments, which might contain these keywords
-        gsub("#.*\n", "", openAI_response()$cmd),
-        ignore.case = TRUE
-      )
-    ) > 0
-
-    is_plot <- is_plot ||
-     (
-      sum(
-          grepl(
-            keywords_for_plot,
-            openAI_prompt(),
-            ignore.case = TRUE
-          )
-        ) > 0
-      )
-
-    if (is_plot) {
-      plotOutput("result_plot")
-    } else {
-      verbatimTextOutput("result_text")
-    }
   })
 
   output$data_table <- renderTable({
