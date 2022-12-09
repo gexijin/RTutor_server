@@ -191,19 +191,49 @@ jokes <- c(
   "Why do statisticians have a tough time at parties? Because they're always trying to fit in. --ChatGPT"
 )
 
+
+
+#' Clean up API key character
+#'
+#' The response from GPT3 sometimes contains strings that are not R commands.
+#'
+#' @param api_key is a character string
+#'
+#' @return Returns a string with api key.
+clean_api_key <- function(api_key) {
+  # remove spaces
+  api_key <- gsub(" ", "", api_key)
+  return(api_key)
+}
+
+
+#' Validate API key character
+#'
+#' The response from GPT3 sometimes contains strings that are not R commands.
+#'
+#' @param api_key is a character string
+#'
+#' @return Returns TRUE or FALSE
+validate_api_key <- function(api_key) {
+  valid <- TRUE
+  # if 51 characters, use the one in the file
+  if (nchar(api_key_file) != 51) {
+    valid <- FALSE
+  }
+  return(valid)
+}
+
 # get API key from environment variable.
-api_key <- Sys.getenv("OPEN_API_KEY")
+api_key_global <- Sys.getenv("OPEN_API_KEY")
 
 # If there is an key file in the current folder, use that instead.
 if (file.exists("api_key.txt")) {
-  api_key_file <- readLines("api_key.txt")
-  # remove spaces
-  api_key_file <- gsub(" ", "", api_key_file)
+  api_key <- readLines("api_key.txt")
+  api_key <- clean_api_key(api_key)
 
-  # if 51 characters, use the one in the file
-  if (nchar(api_key_file) == 51) {
-    api_key <- api_key_file
+  # if valid, replace with file
+  if(validate_api_key(api_key)) {
+    api_key_global <- api_key
   }
-}
 
-# additionally users can paste their API key.
+}

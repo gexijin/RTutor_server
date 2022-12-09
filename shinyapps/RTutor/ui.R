@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyBS)
 ###################################################################
 # UI
 ###################################################################
@@ -74,7 +75,21 @@ ui <- fluidPage(
       br(), br(),
       textOutput("usage"),
       textOutput("total_cost"),
-      textInput("api_key", label = h3("Your OpenAI API Key:"), value = "sk-...nOiN"),
+      actionButton("api_button", "API Key"),
+      bsModal(
+        id = "modalAPI",
+        title = "Pay for your own API fee with a key",
+        trigger = "api_button",
+        size = "large",
+        dataTableOutput("distTable"),
+        textInput(
+          inputId = "api_key", 
+          label = h3("Your OpenAI API Key:"),
+          value = "sk-....."
+        )
+      )
+
+
     ),
 
     # Show a plot of the generated distribution

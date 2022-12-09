@@ -133,7 +133,7 @@ The generated code only works correctly some of the times."
     # hide after data is uploaded
     req(is.null(input$user_file))
 
-    if(input$select_data == "mpg") {
+    if (input$select_data == "mpg") {
       selectInput(
         inputId = "demo_prompt",
         choices = demos,
@@ -143,6 +143,13 @@ The generated code only works correctly some of the times."
       return(NULL)
     }
   })
+
+  # api key for the session
+  api_key_session <- reactive({
+    api_key <- api_key_global
+    return(api_key)
+  })
+
 
   openAI_prompt <- reactive({
     req(input$submit_button)
@@ -154,6 +161,7 @@ The generated code only works correctly some of the times."
 
     req(input$submit_button)
     req(input$select_data)
+    req(api_key_session())
 
     isolate({  # so that it will not responde to text, until submitted
       req(input$input_text)
@@ -167,11 +175,12 @@ The generated code only works correctly some of the times."
       )
 
       start_time <- Sys.time()
+
       # Send to openAI
       response <- create_completion(
         engine_id = language_model,
         prompt = prepared_request,
-        openai_api_key = api_key,
+        openai_api_key = api_key_session(),
         max_tokens = 500
       )
       api_time <- difftime(

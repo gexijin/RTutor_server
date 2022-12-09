@@ -9,6 +9,7 @@ lista <- c(
   "readxl",    # read Excel files
   "gridExtra",
   "tippy",
+  "shinyBS",
 
   #---correlation----
   "ggfortify",
