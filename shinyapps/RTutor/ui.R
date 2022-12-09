@@ -82,18 +82,19 @@ ui <- fluidPage(
         trigger = "api_button",
         size = "large",
         h4("Do not bankrupt the math professor!"),
-        h4("If you use this website regularily, please obtain your own API key from the ",
+        h4("If you use this website regularily, 
+          please obtain your own API key from the ",
           a(
             "OpenAI website.",
             href = "https://openai.com/api/",
             target = "_blank"
           ),
           " You will need to create an account and enter payment method, 
-          before generating an API key. You can set monthly limit to $5 at OpenAI,
+          before generating an API key. You can set monthly limit to $3 at OpenAI,
           which will be more than enough for most people.  "
         ),
         textInput(
-          inputId = "api_key", 
+          inputId = "api_key",
           label = "Paste your API key from OpenAI, then close this window.",
           value = NULL,
           placeholder = "sk-..... (51 characters)"
