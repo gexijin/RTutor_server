@@ -450,6 +450,15 @@ The generated code only works correctly some of the times."
       "\n```\n"
     )
 
+    # indicate error
+    if (code_error()) {
+      Rmd_script <- paste0(
+        Rmd_script,
+        "** Error **  \n"
+      )
+    } 
+
+
     return(Rmd_script)
 
 

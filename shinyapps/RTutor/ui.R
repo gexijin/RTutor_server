@@ -95,24 +95,27 @@ ui <- fluidPage(
         ),
 
         tabPanel("About",
-          h5("Powered by ",
+          h5("RTutor uses ",
             a(
               "OpenAI's",
               href = "https://openai.com/",
               target = "_blank"
             ),
+            " powerful ",
             language_model,
-            "language model,",
-            " RTutor enables you to chat with your data.",
+            "language model",
+            " to translate natural language into R code, which is then excuted.",
             "You can request your analysis,
             just like asking a real person.",
             "Upload a data file (CSV, TSV/tab-delimited text files, and Excel) 
             and just analyze it in plain English. 
-            Or used it to learn R and quickly lookup commands."
+            Your results can be downloaded as an HTML report in minutes!"
           ),
           h5("NO WARRANTY! Some of the scripts runs but are incorrect. 
           Please use the auto-generated code as a starting 
           point for further refinement and validation."),
+
+          h5("OpenAI's models are accessed via API, which is not free. Please do not abuse it."),
 
           p(" Personal hobby project by",
             a(
