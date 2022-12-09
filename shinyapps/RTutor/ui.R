@@ -81,15 +81,31 @@ ui <- fluidPage(
         title = "Pay for your own API fee with a key",
         trigger = "api_button",
         size = "large",
-        dataTableOutput("distTable"),
+        h4("Do not bankrupt the math professor!"),
+        h4("If you use this website regularily, please obtain your own API key from the ",
+          a(
+            "OpenAI website.",
+            href = "https://openai.com/api/",
+            target = "_blank"
+          ),
+          " You will need to create an account and enter payment method, 
+          before generating an API key. You can set monthly limit to $5 at OpenAI,
+          which will be more than enough for most people.  "
+        ),
         textInput(
           inputId = "api_key", 
-          label = h3("Your OpenAI API Key:"),
-          value = "sk-....."
-        )
+          label = "Paste your API key from OpenAI, then close this window.",
+          value = NULL,
+          placeholder = "sk-..... (51 characters)"
+        ),
+        h5(
+          "This key will used just for this session. 
+          It will not be saved on our server."
+        ),
+        uiOutput("valid_key"),
+        br(), br(),
+        uiOutput("save_api_ui")
       )
-
-
     ),
 
     # Show a plot of the generated distribution

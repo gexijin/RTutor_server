@@ -12,6 +12,12 @@ min_query_length <- 6  # minimum # of characters
 max_query_length <- 500 # max # of characters
 language_model <- "text-davinci-003"
 
+
+# if this file exists, running on the server. Otherwise local.
+# this is used to change app behavior.
+on_server <- "on_server.txt" 
+
+
 #' Move an element to the front of a vector
 #'
 #' The response from GPT3 sometimes contains strings that are not R commands.
@@ -217,7 +223,7 @@ clean_api_key <- function(api_key) {
 validate_api_key <- function(api_key) {
   valid <- TRUE
   # if 51 characters, use the one in the file
-  if (nchar(api_key_file) != 51) {
+  if (nchar(api_key) != 51) {
     valid <- FALSE
   }
   return(valid)

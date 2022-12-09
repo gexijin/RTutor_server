@@ -10,8 +10,8 @@ library(gridExtra)
 ###################################################################
 
 server <- function(input, output, session) {
+  pdf(NULL) #otherwise, base R plots sometimes do not show.
 
-  pdf(NULL)
   # load demo data when clicked
   observe({
     req(input$demo_prompt)
@@ -147,9 +147,63 @@ The generated code only works correctly some of the times."
   # api key for the session
   api_key_session <- reactive({
     api_key <- api_key_global
+
+    if(!is.null(input$api_key)) {
+
+      key1 <- input$api_key
+      key1 <- clean_api_key(key1)
+
+      if (validate_api_key(key1)) {
+        api_key <- key1
+      }
+    }
     return(api_key)
   })
 
+  output$save_api_ui <- renderUI({
+    req(input$api_key)
+
+    # only show this when running locally.
+    req(!file.exists(on_server))
+
+    req(validate_api_key(input$api_key))
+
+    tagList(
+      actionButton(
+        inputId = "save_api_button",
+        label = "Save key file for next time."
+      ),
+      tippy::tippy_this(
+        elementId = "save_api_button",
+        tooltip = "Save to a local file, 
+        so that you do not have to copy and paste next time.",
+        theme = "light-border"
+      )
+    )
+  })
+
+  output$valid_key <- renderUI({
+    req(input$api_key)
+
+    if(validate_api_key(input$api_key)) {
+      h4(
+        "Key looks good. Just close this window.",
+        style = "color:blue"
+      )
+    } else {
+      h4(
+        "That does not look like a valid key!",
+        style = "color:red"
+      )
+    }
+  })
+
+  # only save key, if app is running locally.
+  observeEvent(input$save_api_button, {
+    req(input$save_api_button)
+    req(input$api_key)
+    writeLines(input$api_key, "api_key.txt")
+  })
 
   openAI_prompt <- reactive({
     req(input$submit_button)
