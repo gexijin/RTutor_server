@@ -105,7 +105,7 @@ clean_cmd <- function(cmd, selected_data){
 
   # if data is uploaded, add a line to get the data.
   if(selected_data == uploaded_data) {
-    cmd <- c("df <- user_data()", cmd)
+    cmd <- c("df <- user_data()$df", cmd)
   }
 
   return(cmd)

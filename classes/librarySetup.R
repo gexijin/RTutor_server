@@ -1,15 +1,14 @@
-install.packages("openai")
-install.packages("tidyverse")  # plot time series
-install.packages("shiny")
-install.packages("nnet") # neural net
+list_packages <- c(
+  "shiny",
+  "openai",
+  "tidyverse",
 
-lista <- c(
-  "neuralnet", # neural network
-  "randomForest", # Random Forest
   "readxl",    # read Excel files
   "gridExtra",
   "tippy",
   "shinyBS",
+  "shinybusy",
+  "DataExplorer",  # auto EDA
 
   #---correlation----
   "ggfortify",
@@ -17,8 +16,63 @@ lista <- c(
   "ggcorrplot",
   "GGally",
   "corrr",
-  "shinybusy"
+
+  #---Heatmap----
+  "pheatmap",
+  "RColorBrewer",
+  "gplots",
+  "ComplexHeatmap",
+  "dendextend",
+  "ggalluvial",
+  "d3heatmap",
+
+  #--Clustering----
+  "kernlab",
+  "cluster",
+  "fpc",
+  "mclust",
+  "dbscan",
+  "factoextra",
+  "ggdendro",
+  "NbClust",
+  "clusterGeneration",
+
+  #--PCA--
+  "ggbiplot",
+  "psych",
+  "pcaMethods",
+  "PCA",
+  "qgraph",
+  "bootPCA",
+  "PCAExplorer",
+
+  #--Regression--
+  "mgcv",
+  "nlme",
+  "caret",
+
+  #--Classification--
+  "rpart",
+  "randomForest",
+  "e1071",
+  "nnet",
+  "gbm",
+  "liblinear",
+  "caret",
+  "ROCR",
+  "klaR",
+  "class",
+  "neuralnet", # neural network
+
+  #---time series---
+  "forecast",
+  "tseries",
+  "TSA",
+  "xts",
+  "lubridate"
+
+
 )
-install.packages(lista)
+install.packages(list_packages)
 
 

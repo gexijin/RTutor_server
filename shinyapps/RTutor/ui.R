@@ -124,11 +124,9 @@ ui <- fluidPage(
           value = "Main",
           h4("AI generated R code:"),
           verbatimTextOutput("openAI"),
-          br(), br(),
           h4("Results:"),
           verbatimTextOutput("console_output"),
           plotOutput("result_plot"),
-          br(), br(),
           tableOutput("data_table")
         ),
 

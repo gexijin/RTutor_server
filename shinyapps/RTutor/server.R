@@ -84,7 +84,11 @@ The generated code only works correctly some of the times."
           )
         }
       }
-      return(df)
+      return(
+        list(
+          df = df
+        )
+      )
     })
   })
 
@@ -424,6 +428,7 @@ The generated code only works correctly some of the times."
   })
 
   # stores the results after running the generated code.
+  # return error indicator and message
   run_result <- reactive({
     req(openAI_response()$cmd)
 
@@ -450,14 +455,17 @@ The generated code only works correctly some of the times."
 
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
-    req(run_result())
-
-    # if error, dummy plot with message
-    if(code_error()) {
-      return(NULL)
-    } else {
-      run_result() # show plot
-    }
+    
+    tryCatch(
+      eval(parse(text = openAI_response()$cmd)),
+      error = function(e) {
+        list(
+          value = -1,
+          message = capture.output(print(e$message)),
+          error_status = TRUE
+        )
+      }
+    )
   })
 
   # Error when run the generated code?
@@ -483,7 +491,7 @@ The generated code only works correctly some of the times."
   output$data_table <- renderTable({
     req(input$select_data)
     if(input$select_data == uploaded_data) {
-      eval(parse(text = paste0("user_data()[1:20, ]")))
+      eval(parse(text = paste0("user_data()$df[1:20, ]")))
     } else {
       eval(parse(text = paste0(input$select_data, "[1:20, ]")))
     }
@@ -543,7 +551,7 @@ The generated code only works correctly some of the times."
       )
     }
 
-    # if uploaded, remove the line: df <- user_data()
+    # if uploaded, remove the line: df <- user_data()$df
     cmd <- openAI_response()$cmd
     if(input$select_data == uploaded_data) {
       cmd <- cmd[-1]
@@ -673,7 +681,7 @@ output$rmd_chuck_output <- renderText({
         req(input$select_data)
         if(input$select_data == uploaded_data) {
           params <- list(
-            df = user_data()
+            df = user_data()$df
           )
         }
 
