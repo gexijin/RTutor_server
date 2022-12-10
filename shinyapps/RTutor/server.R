@@ -250,12 +250,43 @@ The generated code only works correctly some of the times."
       start_time <- Sys.time()
 
       # Send to openAI
-      response <- create_completion(
-        engine_id = language_model,
-        prompt = prepared_request,
-        openai_api_key = api_key_session()$api_key,
-        max_tokens = 500
+      tryCatch(
+        response <- create_completion(
+          engine_id = language_model,
+          prompt = prepared_request,
+          openai_api_key = api_key_session()$api_key,
+          max_tokens = 500
+        ),
+        error = function(e) {
+          shinybusy::remove_modal_spinner()
+          list(
+            value = -1,
+            message = capture.output(print(e$message)),
+            error_status = TRUE
+          )
+        }
       )
+
+
+    error_api <- FALSE
+    # if error returns true, otherwise 
+    #  that slot does not exist, returning false.
+    # or be NULL
+    error_api <- tryCatch(
+      !is.null(response$error_status),
+      error = function(e) {
+        return(TRUE)
+      }
+    )
+
+    if(error_api) {
+      cmd <- NULL
+      response <- NULL
+    } else {
+      cmd <- clean_cmd(response$choices[1, 1], input$select_data)      
+    }
+
+
 
       api_time <- difftime(
         Sys.time(),
@@ -273,7 +304,7 @@ The generated code only works correctly some of the times."
 
       #issue: check status
 
-      cmd <- clean_cmd(response$choices[1, 1], input$select_data)
+
       shinybusy::remove_modal_spinner()
       return(
         list(
@@ -412,23 +443,6 @@ The generated code only works correctly some of the times."
       return(NULL)
     } else {
       run_result() # show plot
-    }
-  })
-
-  output$result_text <- renderText({
-    req(openAI_response()$cmd)
-    req(run_result())
-
-    # if error, the returned list has two elements.
-    if (code_error()) {
-      paste(
-        "Error: ",
-        run_result()$message,
-        "\n\nPlease try again by click Re-submit."
-      )
-    } else {
-      res <- capture.output(run_result())
-      return(paste(res, collapse = "\n"))
     }
   })
 
