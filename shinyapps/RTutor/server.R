@@ -357,7 +357,7 @@ The generated code only works correctly some of the times."
     if(input$submit_button == 0) {
       return("OpenAI charges 0.2¢ per 1k tokens/words 
       from Dr. Ge's account. Heavy users 
-      please set up your own account (below)."
+      please use your own account (below)."
       )
     } else {
     req(openAI_response()$cmd)

@@ -76,16 +76,19 @@ ui <- fluidPage(
         ),
         column(
           width = 6,
-          actionButton("api_button", "Use my account")
+          actionButton("api_button", "Account")
         )
       ),
       bsModal(
         id = "modalAPI",
-        title = "Pay for your own API fee with a key",
+        title = "Advanced AI is not free!",
         trigger = "api_button",
         size = "large",
-        h4("Do not bankrupt Dr. Ge! If you use this regularily, 
-        please user your own OpenAI account."),
+        h4("If you use this regularily, 
+        please use your own OpenAI account. 
+        Otherwise, the minimal fee for many users adds up.
+        Do not bankrupt a math professor!
+        It only take a a few minutes: "),
 
         tags$ul(
             tags$li(
@@ -98,8 +101,9 @@ ui <- fluidPage(
             ),
             tags$li("After logging in, click on \"Personal\" from top left."),
             tags$li(
-              "Click \"Manage Account\" and then Billing. 
-              Here you can add payment methods, and set usage limits to $5 per month."
+              "Click \"Manage Account\" and then \"Billing\",
+               where you can add \"Payment methods\" and set \"Usage 
+              limits\". $5 per month is more than enough."
             ),
             tags$li(
               "Click on \"API keys\" to create a new key, 
