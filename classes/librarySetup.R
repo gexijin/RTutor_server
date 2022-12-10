@@ -72,7 +72,7 @@ list_packages <- c(
   "tseries",
   "TSA",
   "xts",
-  "lubridate",
+  "lubridate"
 
   #--Data visualization--
 
