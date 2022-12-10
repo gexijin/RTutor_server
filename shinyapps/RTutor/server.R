@@ -463,6 +463,17 @@ The generated code only works correctly some of the times."
     )
   })
 
+  output$plot_ui <- renderUI({
+    req(input$submit_button)
+    req(openAI_response()$cmd)
+    if(code_error() || input$submit_button == 0) {
+      return()
+    } else {
+      plotOutput("result_plot")
+    }
+
+  })
+
   # Error when run the generated code?
   code_error <- reactive({
     req(!is.null(run_result()))
@@ -511,7 +522,7 @@ The generated code only works correctly some of the times."
   Rmd_total <- reactiveValues(code = "")
 
   observeEvent(input$submit_button, {
-
+#    browser()
     Rmd_total$code <- paste0(Rmd_total$code, Rmd_chuck())
   })
 
@@ -527,19 +538,35 @@ The generated code only works correctly some of the times."
     # insert script for reading data
     if(input$submit_button == 1 && input$select_data == uploaded_data) {
       # Read file
+      file_name <- input$user_file$name
       if(user_data()$file_type == "read_excel") {
-        txt <- "# install.packages(readxl)\nlibrary(readxl)\ndf <- read_excel()"
+        txt <- paste0(
+          "# install.packages(readxl)\nlibrary(readxl)\ndf <- read_excel(\"",
+          file_name,
+          "\")"
+        )
+
       }
       if(user_data()$file_type == "read.csv") {
-        txt <- "df <- read.csv()"
+        txt <- paste0(
+          "df <- read.csv(\"",
+          file_name,
+          "\")"
+        )
       }
       if(user_data()$file_type == "read.table") {
-        txt <- "df <- read.table(file, sep = \"\t\", header = TRUE)"
+        txt <- paste0(
+          "df <- read.table(\"",
+          file_name,
+          "\", sep = \"\t\", header = TRUE)"
+        )
       }
+
       Rmd_script <- paste0(
-        "\n\n```{R}\n",
+        "\n### 0. Read File\n",
+        "```{R, eval = FALSE}\n",
         txt,
-        "```{R}\n"
+        "\n```\n"
       )
     }
 

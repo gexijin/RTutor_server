@@ -5,7 +5,7 @@ library(shinyBS)
 ###################################################################
 
 ui <- fluidPage(
-  titlePanel("RTutor - Do statistics in English"),
+  titlePanel("RTutor - Talk to your data"),
   windowTitle = "RTutor",
   # Sidebar with a slider input for number of bins
   sidebarLayout(
@@ -126,7 +126,7 @@ ui <- fluidPage(
           verbatimTextOutput("openAI"),
           h4("Results:"),
           verbatimTextOutput("console_output"),
-          plotOutput("result_plot"),
+          uiOutput("plot_ui"),
           tableOutput("data_table")
         ),
 
@@ -143,6 +143,7 @@ ui <- fluidPage(
             "Download a R Markdown source file.",
             theme = "light-border"
           ),
+          br(), br(),
           verbatimTextOutput("rmd_chuck_output")
         ),
 

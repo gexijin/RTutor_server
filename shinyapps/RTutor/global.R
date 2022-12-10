@@ -7,6 +7,7 @@ library(gridExtra)
 # Global variables
 ###################################################
 
+ver <- 1.1 # RTutor
 uploaded_data <- "Upload"
 min_query_length <- 6  # minimum # of characters
 max_query_length <- 500 # max # of characters

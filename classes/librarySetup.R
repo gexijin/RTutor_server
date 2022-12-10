@@ -51,7 +51,7 @@ list_packages <- c(
   "nlme",
   "caret",
 
-  #--Classification--
+  #--Classification, machine learning
   "rpart",
   "randomForest",
   "e1071",
@@ -63,13 +63,20 @@ list_packages <- c(
   "klaR",
   "class",
   "neuralnet", # neural network
+  "xgboost",
+  "liblinear",
+  "mlr",
 
   #---time series---
   "forecast",
   "tseries",
   "TSA",
   "xts",
-  "lubridate"
+  "lubridate",
+
+  #--Data visualization--
+
+
 
 
 )
