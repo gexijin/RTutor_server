@@ -68,6 +68,7 @@ The generated code only works correctly some of the times."
     req(!is.null(in_file))
 
     isolate({
+      file_type <- "read_excel"
       # Excel file ---------------
       if(grepl("xls$|xlsx$", in_file, ignore.case = TRUE)) {
         df <- readxl::read_excel(in_file)
@@ -75,6 +76,7 @@ The generated code only works correctly some of the times."
       } else {
         #CSV --------------------
         df <- read.csv(in_file)
+        file_type <- "read.csv"
         # Tab-delimented file ----------
         if (ncol(df) == 2) {
           df <- read.table(
@@ -82,11 +84,13 @@ The generated code only works correctly some of the times."
             sep = "\t",
             header = TRUE
           )
+          file_type <- "read.table"
         }
       }
       return(
         list(
-          df = df
+          df = df,
+          file_type = file_type
         )
       )
     })
@@ -409,7 +413,6 @@ The generated code only works correctly some of the times."
     }
   })
 
-
  # Defining & initializing the reactiveValues object
   counter <- reactiveValues(tokens = 0, requests = 0)
   observeEvent(input$submit_button, {
@@ -420,6 +423,8 @@ The generated code only works correctly some of the times."
 
   # stores the results after running the generated code.
   # return error indicator and message
+
+  # Note that the code is run three times!!!!!
   run_result <- reactive({
     req(openAI_response()$cmd)
 
@@ -506,6 +511,7 @@ The generated code only works correctly some of the times."
   Rmd_total <- reactiveValues(code = "")
 
   observeEvent(input$submit_button, {
+
     Rmd_total$code <- paste0(Rmd_total$code, Rmd_chuck())
   })
 
@@ -515,8 +521,31 @@ The generated code only works correctly some of the times."
     req(openAI_response()$cmd)
     req(openAI_prompt())
 
+    Rmd_script <- ""
+
+    # if the first chunk & data is uploaded, 
+    # insert script for reading data
+    if(input$submit_button == 1 && input$select_data == uploaded_data) {
+      # Read file
+      if(user_data()$file_type == "read_excel") {
+        txt <- "# install.packages(readxl)\nlibrary(readxl)\ndf <- read_excel()"
+      }
+      if(user_data()$file_type == "read.csv") {
+        txt <- "df <- read.csv()"
+      }
+      if(user_data()$file_type == "read.table") {
+        txt <- "df <- read.table(file, sep = \"\t\", header = TRUE)"
+      }
+      Rmd_script <- paste0(
+        "\n\n```{R}\n",
+        txt,
+        "```{R}\n"
+      )
+    }
+
     # User request----------------------
     Rmd_script  <- paste0(
+      Rmd_script,
       "\n\n### ",
       counter$requests,
       ". ",
@@ -601,6 +630,11 @@ output$rmd_chuck_output <- renderText({
         date(), "\"\n",
         "output: html_document\n",
         "---\n",
+        Rmd_total$code
+      )
+
+      Rmd_script <- paste0(
+        Rmd_script,
         Rmd_total$code
       )
       writeLines(Rmd_script, file)
