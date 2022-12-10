@@ -494,6 +494,16 @@ The generated code only works correctly some of the times."
     return(error_status)
   })
 
+
+  output$error_message <- renderUI({
+    if(code_error()) {
+      paste(run_result()$message, collapse = "\n")
+    } else {
+      return(NULL)
+    }
+
+  })
+
   output$data_table <- renderTable({
     req(input$select_data)
     if(input$select_data == uploaded_data) {
