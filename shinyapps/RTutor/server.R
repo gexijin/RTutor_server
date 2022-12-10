@@ -497,7 +497,7 @@ The generated code only works correctly some of the times."
 
   output$error_message <- renderUI({
     if(code_error()) {
-      paste(run_result()$message, collapse = "\n")
+      run_result()$message
     } else {
       return(NULL)
     }

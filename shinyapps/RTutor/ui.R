@@ -124,7 +124,7 @@ ui <- fluidPage(
           value = "Main",
           h4("AI generated R code:"),
           verbatimTextOutput("openAI"),
-          uiOutput("error_message"),
+          verbatimTextOutput("error_message"),
           h4("Results:"),
           verbatimTextOutput("console_output"),
           uiOutput("plot_ui"),
