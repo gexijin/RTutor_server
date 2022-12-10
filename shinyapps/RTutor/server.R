@@ -60,7 +60,7 @@ The generated code only works correctly some of the times."
     )
   })
 
-
+  # uploaded data
   user_data <- reactive({
     req(input$user_file)
     in_file <- input$user_file
@@ -245,7 +245,9 @@ The generated code only works correctly some of the times."
 
       shinybusy::show_modal_spinner(
         spin = "orbit",
-        text = "Talking to OpenAI server ...",
+        text = paste(
+          sample(jokes, 1)
+        ),
         color = "#000000"
       )
 
@@ -334,26 +336,15 @@ The generated code only works correctly some of the times."
       easyClose = TRUE,
       size = "s"
     )
-observeEvent(!openAI_response()$error, {
-
-})
 
 
+    # show a warning message when reached 10c, 20c, 30c ...
     observe({
       req(file.exists(on_server))
       req(!openAI_response()$error)
-      if(counter$requests %% 15 == 0 && counter$requests != 0) {
-        shiny::showModal(
-          shiny::modalDialog(
-            size = "s",
-            h4(sample(jokes, 1)),
-            h4("Close this window to continue.")
-          )
-        )
-      }
 
       cost_session <-  round(counter$tokens * 2e-3, 0)
-      if( cost_session %% 2  == 0 & cost_session != 0) {
+      if( cost_session %% 10  == 0 & cost_session != 0) {
         shiny::showModal(
           shiny::modalDialog(
             size = "s",
@@ -366,7 +357,7 @@ observeEvent(!openAI_response()$error, {
             ),
             h4("Slow down. Please do not bankrupt Dr. Ge. 
             Use your own API key. 
-            Or PayPal him some funds (gexijin@gmail.com).")
+            Or PayPal him some funds (gexijin@gmail.com)!")
           )
         )
       }
@@ -456,7 +447,7 @@ observeEvent(!openAI_response()$error, {
     )
     paste(out, collapse = "\n")
   })
-  
+
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
     req(run_result())
@@ -501,6 +492,11 @@ observeEvent(!openAI_response()$error, {
   bordered = TRUE,
   hover = TRUE
   )
+
+
+#------------------------------------------------------------------------------
+#   Log and report
+#------------------------------------------------------------------------------
 
   output$session_info <- renderUI({
     i <- c("<br><h4>R session info: </h4>")
@@ -574,7 +570,6 @@ observeEvent(!openAI_response()$error, {
     return(Rmd_script)
   })
 
-
   output$html_report <- renderUI({
     req(openAI_response()$cmd)
     tagList(
@@ -589,9 +584,6 @@ observeEvent(!openAI_response()$error, {
           )
    )
   })
-
-
-
 
 output$rmd_chuck_output <- renderText({
   req(Rmd_chuck())
