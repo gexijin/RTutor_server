@@ -47,7 +47,7 @@ ui <- fluidPage(
           "ChatGPT can return different results for the same request.",
           theme = "light-border"
         ),
-      br(),
+      br(), br(),
       textOutput("usage"),
       textOutput("total_cost"),
       br(),

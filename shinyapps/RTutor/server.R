@@ -383,22 +383,13 @@ The generated code only works correctly some of the times."
   output$usage <- renderText({
     req(openAI_response()$cmd)
 
-    e <- ""
-    if(code_error()) {
-      e <- " !!Error!! "
-    }
     paste0(
       "R",
       counter$requests, ":  ",
       openAI_response()$response$usage$completion_tokens,
       " tokens, ",
       openAI_response()$time,
-      " second(s)",
-      e
-#      " Type: ",
-#      paste0(class(run_result()), collapse = "/"),
-#      " Length:",
-#      length(run_result())
+      " second(s)"
     )
   })
 
@@ -455,7 +446,6 @@ The generated code only works correctly some of the times."
 
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
-    
     tryCatch(
       eval(parse(text = openAI_response()$cmd)),
       error = function(e) {
