@@ -117,7 +117,7 @@ The generated code only works correctly some of the times."
 
     selectInput(
       inputId = "select_data",
-      label = "Dataset",
+      label = "Demo Data",
       choices = datasets,
       selected = "mpg",
       multiple = FALSE,
@@ -283,10 +283,8 @@ The generated code only works correctly some of the times."
       cmd <- NULL
       response <- NULL
     } else {
-      cmd <- clean_cmd(response$choices[1, 1], input$select_data)      
+      cmd <- clean_cmd(response$choices[1, 1], input$select_data)
     }
-
-
 
       api_time <- difftime(
         Sys.time(),
@@ -328,7 +326,7 @@ The generated code only works correctly some of the times."
           )
         )
       }
-      
+
       cost_session <-  round(counter$tokens * 2e-3, 0)
       if( cost_session %% 2  == 0 & cost_session != 0) {
         shiny::showModal(
