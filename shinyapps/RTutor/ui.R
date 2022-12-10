@@ -126,7 +126,8 @@ ui <- fluidPage(
           verbatimTextOutput("openAI"),
           uiOutput("error_message"),
           h4("Results:"),
-          verbatimTextOutput("console_output"),
+          # shows error message in local machine, but not on the server
+          # verbatimTextOutput("console_output"),
           uiOutput("plot_ui"),
           tableOutput("data_table")
         ),

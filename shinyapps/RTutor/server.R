@@ -4,7 +4,6 @@ library(shiny)
 library(tippy)
 library(gridExtra)
 
-
 ###################################################################
 # Server
 ###################################################################
@@ -438,6 +437,7 @@ The generated code only works correctly some of the times."
         )
       }
     )
+
   })
 
   # just capture the screen output
@@ -451,6 +451,7 @@ The generated code only works correctly some of the times."
 
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
+
     tryCatch(
       eval(parse(text = openAI_response()$cmd)),
       error = function(e) {
@@ -461,6 +462,7 @@ The generated code only works correctly some of the times."
         )
       }
     )
+
   })
 
   output$plot_ui <- renderUI({
@@ -663,7 +665,7 @@ output$rmd_chuck_output <- renderText({
     content = function(file) {
       Rmd_script <- paste0(
         "---\n",
-        "title: \"Report\"\n",
+        "title: \"RTutor Report\"\n",
         "author: \"RTutor, Powered by ChatGPT\"\n",
         "date: \"",
         date(), "\"\n",
