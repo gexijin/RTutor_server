@@ -146,7 +146,9 @@ The generated code only works correctly some of the times."
 
   # api key for the session
   api_key_session <- reactive({
+
     api_key <- api_key_global
+    session_key_source <- key_source
 
     if(!is.null(input$api_key)) {
 
@@ -155,9 +157,26 @@ The generated code only works correctly some of the times."
 
       if (validate_api_key(key1)) {
         api_key <- key1
+        session_key_source <- "Pasted!"
       }
     }
-    return(api_key)
+    return(
+      list(
+        api_key = api_key,
+        key_source = session_key_source
+      )
+    )
+  })
+
+  output$session_api_source <- renderText({
+    txt <- api_key_session()$api_key
+    paste0(
+      "Acct: ",
+      substr(txt, nchar(txt) - 4, nchar(txt)),
+      " (",
+      api_key_session()$key_source,
+      ")"
+    )
   })
 
   output$save_api_ui <- renderUI({
@@ -234,7 +253,7 @@ The generated code only works correctly some of the times."
       response <- create_completion(
         engine_id = language_model,
         prompt = prepared_request,
-        openai_api_key = api_key_session(),
+        openai_api_key = api_key_session()$api_key,
         max_tokens = 500
       )
 
@@ -269,7 +288,7 @@ The generated code only works correctly some of the times."
     # Pop-up modal for gene assembl information ----
     observe({
       req(file.exists(on_server))
-      if(counter$requests %% 10 == 0 && counter$requests != 0) {
+      if(counter$requests %% 15 == 0 && counter$requests != 0) {
         shiny::showModal(
           shiny::modalDialog(
             size = "s",
@@ -278,20 +297,22 @@ The generated code only works correctly some of the times."
           )
         )
       }
-
-      if(counter$requests %% 50 == 0 && counter$requests != 0) {
+      
+      cost_session <-  round(counter$tokens * 2e-3, 0)
+      if( cost_session %% 2  == 0 & cost_session != 0) {
         shiny::showModal(
           shiny::modalDialog(
             size = "s",
             h4(
-              paste(
-                counter$requests,
-                " API requests!"
-                )
+              paste0(
+                "Cumulative API Cost reached ",
+                cost_session,
+                "¢"
+              )
             ),
-            h4("Slow down and smell some roses. 
-            Or PayPal me some funds (gexijin@gmail.com) 
-            to cover the API and server costs.")
+            h4("Slow down. Please do not bankrupt Dr. Ge. 
+            Use your own API key. 
+            Or PayPal him some funds (gexijin@gmail.com).")
           )
         )
       }
@@ -318,7 +339,8 @@ The generated code only works correctly some of the times."
       e <- " !!Error!! "
     }
     paste0(
-      counter$requests, ": ",
+      "R",
+      counter$requests, ":  ",
       openAI_response()$response$usage$completion_tokens,
       " tokens, ",
       openAI_response()$time,
@@ -333,9 +355,9 @@ The generated code only works correctly some of the times."
 
   output$total_cost <- renderText({
     if(input$submit_button == 0) {
-      return("OpenAI charges 0.2¢ per 1k tokens, 
-        the number of words in the request and 
-        the response."
+      return("OpenAI charges 0.2¢ per 1k tokens/words 
+      from Dr. Ge's account. Heavy users 
+      please set up your own account (below)."
       )
     } else {
     req(openAI_response()$cmd)
@@ -407,17 +429,6 @@ The generated code only works correctly some of the times."
     } else {
       res <- capture.output(run_result())
       return(paste(res, collapse = "\n"))
-    }
-  })
-
-  # using this some of the plots does not show up.
-  output$results_ui <- renderUI({
-    req(openAI_response()$cmd)
-
-    if (code_error()) {
-      return(NULL)
-    } else {
-      plotOutput("result_plot")
     }
   })
 

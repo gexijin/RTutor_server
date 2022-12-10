@@ -3,3 +3,11 @@
 .RData
 .Ruserdata
 shinyapps/RTutor/api_key.txt
+shinyapps/RTutor/on_server.txt
+shinyapps/RTutor/api_key_oo.txt
+shinyapps/RTutor/on_server_not.txt
+shinyapps/RTutor/api_key_test.txt
+shinyapps/RTutor/api_key_dd.txt
+shinyapps/RTutor/api_key_dd.txt
+shinyapps/RTutor/api_key_dd.txt
+*.txt

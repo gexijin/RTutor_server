@@ -36,19 +36,23 @@ ui <- fluidPage(
         placeholder = NULL,
         rows = 8, ""
       ),
-      actionButton("submit_button", strong("Submit")),
-      tags$head(tags$style(
-        "#submit_button{font-size: 16px;color: red}"
-      )),
-      tippy::tippy_this(
-        "submit_button",
-        "ChatGPT can return different results for the same request.",
-        theme = "light-border"
-      ),
+
       br(), br(),
       fluidRow(
         column(
-          width = 4,
+          width = 6,
+          actionButton("submit_button", strong("Submit")),
+          tags$head(tags$style(
+            "#submit_button{font-size: 16px;color: red}"
+          )),
+          tippy::tippy_this(
+            "submit_button",
+            "ChatGPT can return different results for the same request.",
+            theme = "light-border"
+          ),
+        ),
+        column(
+          width = 6,
           downloadButton(
             outputId = "report",
             label = "Report"
@@ -58,40 +62,49 @@ ui <- fluidPage(
             "Download a HTML report for this session.",
             theme = "light-border"
           )
-        ),
-        column(
-          width = 8,
-          downloadButton(
-            outputId = "Rmd_source",
-            label = "RMarkdown"
-          ),
-          tippy::tippy_this(
-            "Rmd_source",
-            "Download a R Markdown source file.",
-            theme = "light-border"
-          )
         )
+
       ),
-      br(), br(),
+      br(),
       textOutput("usage"),
       textOutput("total_cost"),
-      actionButton("api_button", "API Key"),
+      br(),
+      fluidRow(
+        column(
+          width = 6,
+          textOutput("session_api_source")
+        ),
+        column(
+          width = 6,
+          actionButton("api_button", "Use my account")
+        )
+      ),
       bsModal(
         id = "modalAPI",
         title = "Pay for your own API fee with a key",
         trigger = "api_button",
         size = "large",
-        h4("Do not bankrupt the math professor!"),
-        h4("If you use this website regularily, 
-          please obtain your own API key from the ",
-          a(
-            "OpenAI website.",
-            href = "https://openai.com/api/",
-            target = "_blank"
-          ),
-          " You will need to create an account and enter payment method, 
-          before generating an API key. You can set monthly limit to $3 at OpenAI,
-          which will be more than enough for most people.  "
+        h4("Do not bankrupt Dr. Ge! If you use this regularily, 
+        please user your own OpenAI account."),
+
+        tags$ul(
+            tags$li(
+              "Create a personal account at",
+              a(
+                "OpenAI.",
+                href = "https://openai.com/api/",
+                target = "_blank"
+              )
+            ),
+            tags$li("After logging in, click on \"Personal\" from top left."),
+            tags$li(
+              "Click \"Manage Account\" and then Billing. 
+              Here you can add payment methods, and set usage limits to $5 per month."
+            ),
+            tags$li(
+              "Click on \"API keys\" to create a new key, 
+              which can be copied and pasted it below."
+            ),
         ),
         textInput(
           inputId = "api_key",
@@ -104,7 +117,7 @@ ui <- fluidPage(
           It will not be saved on our server."
         ),
         uiOutput("valid_key"),
-        br(), br(),
+        br(), 
         uiOutput("save_api_ui")
       )
     ),
@@ -123,8 +136,6 @@ ui <- fluidPage(
           h4("Results:"),
           verbatimTextOutput("console_output"),
           plotOutput("result_plot"),
-#          uiOutput("results_ui"),
-
           br(), br(),
           tableOutput("data_table")
         ),
@@ -132,6 +143,16 @@ ui <- fluidPage(
         tabPanel(
           title = "Log",
           value = "Log",
+          br(),
+          downloadButton(
+            outputId = "Rmd_source",
+            label = "Download RMarkdown file"
+          ),
+          tippy::tippy_this(
+            "Rmd_source",
+            "Download a R Markdown source file.",
+            theme = "light-border"
+          ),
           verbatimTextOutput("rmd_chuck_output")
         ),
 

@@ -15,7 +15,7 @@ language_model <- "text-davinci-003"
 
 # if this file exists, running on the server. Otherwise local.
 # this is used to change app behavior.
-on_server <- "on_server.txt" 
+on_server <- "on_server.txt"
 
 
 #' Move an element to the front of a vector
@@ -229,9 +229,10 @@ validate_api_key <- function(api_key) {
   return(valid)
 }
 
+
 # get API key from environment variable.
 api_key_global <- Sys.getenv("OPEN_API_KEY")
-
+key_source <- "Envt"
 # If there is an key file in the current folder, use that instead.
 if (file.exists("api_key.txt")) {
   api_key <- readLines("api_key.txt")
@@ -240,6 +241,7 @@ if (file.exists("api_key.txt")) {
   # if valid, replace with file
   if(validate_api_key(api_key)) {
     api_key_global <- api_key
+    key_source <- "File"
   }
 
 }
