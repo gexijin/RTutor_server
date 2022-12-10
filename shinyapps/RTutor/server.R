@@ -60,7 +60,7 @@ The generated code only works correctly some of the times."
     )
   })
 
-
+  # uploaded data
   user_data <- reactive({
     req(input$user_file)
     in_file <- input$user_file
@@ -68,6 +68,7 @@ The generated code only works correctly some of the times."
     req(!is.null(in_file))
 
     isolate({
+      file_type <- "read_excel"
       # Excel file ---------------
       if(grepl("xls$|xlsx$", in_file, ignore.case = TRUE)) {
         df <- readxl::read_excel(in_file)
@@ -75,6 +76,7 @@ The generated code only works correctly some of the times."
       } else {
         #CSV --------------------
         df <- read.csv(in_file)
+        file_type <- "read.csv"
         # Tab-delimented file ----------
         if (ncol(df) == 2) {
           df <- read.table(
@@ -82,9 +84,15 @@ The generated code only works correctly some of the times."
             sep = "\t",
             header = TRUE
           )
+          file_type <- "read.table"
         }
       }
-      return(df)
+      return(
+        list(
+          df = df,
+          file_type = file_type
+        )
+      )
     })
   })
 
@@ -117,7 +125,7 @@ The generated code only works correctly some of the times."
 
     selectInput(
       inputId = "select_data",
-      label = "Demo Data",
+      label = "Demo data",
       choices = datasets,
       selected = "mpg",
       multiple = FALSE,
@@ -245,7 +253,9 @@ The generated code only works correctly some of the times."
 
       shinybusy::show_modal_spinner(
         spin = "orbit",
-        text = "Talking to OpenAI server ...",
+        text = paste(
+          sample(jokes, 1)
+        ),
         color = "#000000"
       )
 
@@ -334,26 +344,15 @@ The generated code only works correctly some of the times."
       easyClose = TRUE,
       size = "s"
     )
-observeEvent(!openAI_response()$error, {
-
-})
 
 
+    # show a warning message when reached 10c, 20c, 30c ...
     observe({
       req(file.exists(on_server))
       req(!openAI_response()$error)
-      if(counter$requests %% 15 == 0 && counter$requests != 0) {
-        shiny::showModal(
-          shiny::modalDialog(
-            size = "s",
-            h4(sample(jokes, 1)),
-            h4("Close this window to continue.")
-          )
-        )
-      }
 
       cost_session <-  round(counter$tokens * 2e-3, 0)
-      if( cost_session %% 2  == 0 & cost_session != 0) {
+      if( cost_session %% 10  == 0 & cost_session != 0) {
         shiny::showModal(
           shiny::modalDialog(
             size = "s",
@@ -366,7 +365,7 @@ observeEvent(!openAI_response()$error, {
             ),
             h4("Slow down. Please do not bankrupt Dr. Ge. 
             Use your own API key. 
-            Or PayPal him some funds (gexijin@gmail.com).")
+            Or PayPal him some funds (gexijin@gmail.com)!")
           )
         )
       }
@@ -388,22 +387,13 @@ observeEvent(!openAI_response()$error, {
   output$usage <- renderText({
     req(openAI_response()$cmd)
 
-    e <- ""
-    if(code_error()) {
-      e <- " !!Error!! "
-    }
     paste0(
       "R",
       counter$requests, ":  ",
       openAI_response()$response$usage$completion_tokens,
       " tokens, ",
       openAI_response()$time,
-      " second(s)",
-      e
-#      " Type: ",
-#      paste0(class(run_result()), collapse = "/"),
-#      " Length:",
-#      length(run_result())
+      " second(s)"
     )
   })
 
@@ -423,7 +413,6 @@ observeEvent(!openAI_response()$error, {
     }
   })
 
-
  # Defining & initializing the reactiveValues object
   counter <- reactiveValues(tokens = 0, requests = 0)
   observeEvent(input$submit_button, {
@@ -433,6 +422,9 @@ observeEvent(!openAI_response()$error, {
   })
 
   # stores the results after running the generated code.
+  # return error indicator and message
+
+  # Note that the code is run three times!!!!!
   run_result <- reactive({
     req(openAI_response()$cmd)
 
@@ -456,17 +448,30 @@ observeEvent(!openAI_response()$error, {
     )
     paste(out, collapse = "\n")
   })
-  
+
   output$result_plot <- renderPlot({
     req(openAI_response()$cmd)
-    req(run_result())
+    tryCatch(
+      eval(parse(text = openAI_response()$cmd)),
+      error = function(e) {
+        list(
+          value = -1,
+          message = capture.output(print(e$message)),
+          error_status = TRUE
+        )
+      }
+    )
+  })
 
-    # if error, dummy plot with message
-    if(code_error()) {
-      return(NULL)
+  output$plot_ui <- renderUI({
+    req(input$submit_button)
+    req(openAI_response()$cmd)
+    if(code_error() || input$submit_button == 0) {
+      return()
     } else {
-      run_result() # show plot
+      plotOutput("result_plot")
     }
+
   })
 
   # Error when run the generated code?
@@ -492,7 +497,7 @@ observeEvent(!openAI_response()$error, {
   output$data_table <- renderTable({
     req(input$select_data)
     if(input$select_data == uploaded_data) {
-      eval(parse(text = paste0("user_data()[1:20, ]")))
+      eval(parse(text = paste0("user_data()$df[1:20, ]")))
     } else {
       eval(parse(text = paste0(input$select_data, "[1:20, ]")))
     }
@@ -501,6 +506,11 @@ observeEvent(!openAI_response()$error, {
   bordered = TRUE,
   hover = TRUE
   )
+
+
+#------------------------------------------------------------------------------
+#   Log and report
+#------------------------------------------------------------------------------
 
   output$session_info <- renderUI({
     i <- c("<br><h4>R session info: </h4>")
@@ -512,6 +522,7 @@ observeEvent(!openAI_response()$error, {
   Rmd_total <- reactiveValues(code = "")
 
   observeEvent(input$submit_button, {
+#    browser()
     Rmd_total$code <- paste0(Rmd_total$code, Rmd_chuck())
   })
 
@@ -521,8 +532,47 @@ observeEvent(!openAI_response()$error, {
     req(openAI_response()$cmd)
     req(openAI_prompt())
 
+    Rmd_script <- ""
+
+    # if the first chunk & data is uploaded, 
+    # insert script for reading data
+    if(input$submit_button == 1 && input$select_data == uploaded_data) {
+      # Read file
+      file_name <- input$user_file$name
+      if(user_data()$file_type == "read_excel") {
+        txt <- paste0(
+          "# install.packages(readxl)\nlibrary(readxl)\ndf <- read_excel(\"",
+          file_name,
+          "\")"
+        )
+
+      }
+      if(user_data()$file_type == "read.csv") {
+        txt <- paste0(
+          "df <- read.csv(\"",
+          file_name,
+          "\")"
+        )
+      }
+      if(user_data()$file_type == "read.table") {
+        txt <- paste0(
+          "df <- read.table(\"",
+          file_name,
+          "\", sep = \"\t\", header = TRUE)"
+        )
+      }
+
+      Rmd_script <- paste0(
+        "\n### 0. Read File\n",
+        "```{R, eval = FALSE}\n",
+        txt,
+        "\n```\n"
+      )
+    }
+
     # User request----------------------
     Rmd_script  <- paste0(
+      Rmd_script,
       "\n\n### ",
       counter$requests,
       ". ",
@@ -547,7 +597,7 @@ observeEvent(!openAI_response()$error, {
       )
     }
 
-    # if uploaded, remove the line: df <- user_data()
+    # if uploaded, remove the line: df <- user_data()$df
     cmd <- openAI_response()$cmd
     if(input$select_data == uploaded_data) {
       cmd <- cmd[-1]
@@ -572,8 +622,21 @@ observeEvent(!openAI_response()$error, {
     }
 
     return(Rmd_script)
+  })
 
-
+  output$html_report <- renderUI({
+    req(openAI_response()$cmd)
+    tagList(
+      downloadButton(
+        outputId = "report",
+        label = "Report"
+      ),
+          tippy::tippy_this(
+            "report",
+            "Download a HTML report for this session.",
+            theme = "light-border"
+          )
+   )
   })
 
 output$rmd_chuck_output <- renderText({
@@ -594,6 +657,11 @@ output$rmd_chuck_output <- renderText({
         date(), "\"\n",
         "output: html_document\n",
         "---\n",
+        Rmd_total$code
+      )
+
+      Rmd_script <- paste0(
+        Rmd_script,
         Rmd_total$code
       )
       writeLines(Rmd_script, file)
@@ -664,7 +732,7 @@ output$rmd_chuck_output <- renderText({
         req(input$select_data)
         if(input$select_data == uploaded_data) {
           params <- list(
-            df = user_data()
+            df = user_data()$df
           )
         }
 
