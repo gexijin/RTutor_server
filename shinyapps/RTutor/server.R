@@ -496,8 +496,10 @@ The generated code only works correctly some of the times."
 
 
   output$error_message <- renderUI({
+    req(run_result())
     if(code_error()) {
-      run_result()$message
+
+      h4(paste("Error!", run_result()$message), style = "color:red")
     } else {
       return(NULL)
     }
