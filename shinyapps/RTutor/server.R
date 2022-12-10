@@ -157,7 +157,7 @@ The generated code only works correctly some of the times."
 
       if (validate_api_key(key1)) {
         api_key <- key1
-        session_key_source <- "Pasted!"
+        session_key_source <- "pasted!"
       }
     }
     return(
@@ -171,7 +171,9 @@ The generated code only works correctly some of the times."
   output$session_api_source <- renderText({
     txt <- api_key_session()$api_key
     paste0(
-      "Acct: ",
+      "Current API key: ",
+      substr(txt, 1, 4),
+      ".....",
       substr(txt, nchar(txt) - 4, nchar(txt)),
       " (",
       api_key_session()$key_source,
@@ -258,7 +260,13 @@ The generated code only works correctly some of the times."
           max_tokens = 500
         ),
         error = function(e) {
+
+          # remove spinner, show message for 5s, & reload
           shinybusy::remove_modal_spinner()
+          shiny::showModal(api_error_modal)
+          Sys.sleep(5)
+          session$reload()
+
           list(
             value = -1,
             message = capture.output(print(e$message)),
@@ -294,29 +302,46 @@ The generated code only works correctly some of the times."
 
       # if more than 10 requests, slow down. Only on server.
       if(counter$requests > 20 && file.exists(on_server)) {
-        Sys.sleep( counter$requests / 5 + runif(1, 0, 5))
+        Sys.sleep(counter$requests / 5 + runif(1, 0, 5))
       }
       if(counter$requests > 50 && file.exists(on_server)) {
-        Sys.sleep( counter$requests / 10 + runif(1, 0, 10))
+        Sys.sleep(counter$requests / 10 + runif(1, 0, 10))
       }
 
       #issue: check status
-
 
       shinybusy::remove_modal_spinner()
       return(
         list(
           cmd = cmd,
           response = response,
-          time = round(api_time, 0)
+          time = round(api_time, 0),
+          error = error_api
         )
       )
     })
   })
 
-    # Pop-up modal for gene assembl information ----
+    # a modal shows api connection error
+    api_error_modal <- shiny::modalDialog(
+      title = "API connection error!",
+      tags$h4("Is the API key is correct?", style = "color:red"),
+      tags$h4("How about the WiFi?", style = "color:red"),
+      tags$h4(
+        "Auto-reset ...", 
+        style = "color:blue; text-align:right"
+      ),
+      easyClose = TRUE,
+      size = "s"
+    )
+observeEvent(!openAI_response()$error, {
+
+})
+
+
     observe({
       req(file.exists(on_server))
+      req(!openAI_response()$error)
       if(counter$requests %% 15 == 0 && counter$requests != 0) {
         shiny::showModal(
           shiny::modalDialog(

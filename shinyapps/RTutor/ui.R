@@ -71,12 +71,12 @@ ui <- fluidPage(
       br(),
       fluidRow(
         column(
-          width = 6,
-          textOutput("session_api_source")
+          width = 6
+
         ),
         column(
           width = 6,
-          actionButton("api_button", "Account")
+          actionButton("api_button", "Settings")
         )
       ),
       bsModal(
@@ -121,12 +121,18 @@ ui <- fluidPage(
           It will not be saved on our server."
         ),
         uiOutput("valid_key"),
-        br(), 
-        uiOutput("save_api_ui")
+        br(),
+        uiOutput("save_api_ui"),
+        textOutput("session_api_source")
       )
     ),
 
-    # Show a plot of the generated distribution
+
+###############################################################################
+# Main
+###############################################################################
+
+
     mainPanel(
 
       tabsetPanel(
