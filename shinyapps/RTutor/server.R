@@ -572,9 +572,26 @@ observeEvent(!openAI_response()$error, {
     }
 
     return(Rmd_script)
-
-
   })
+
+
+  output$html_report <- renderUI({
+    req(openAI_response()$cmd)
+    tagList(
+      downloadButton(
+        outputId = "report",
+        label = "Report"
+      ),
+          tippy::tippy_this(
+            "report",
+            "Download a HTML report for this session.",
+            theme = "light-border"
+          )
+   )
+  })
+
+
+
 
 output$rmd_chuck_output <- renderText({
   req(Rmd_chuck())

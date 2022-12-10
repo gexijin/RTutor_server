@@ -38,41 +38,23 @@ ui <- fluidPage(
       ),
 
       br(), br(),
-      fluidRow(
-        column(
-          width = 6,
-          actionButton("submit_button", strong("Submit")),
-          tags$head(tags$style(
-            "#submit_button{font-size: 16px;color: red}"
-          )),
-          tippy::tippy_this(
-            "submit_button",
-            "ChatGPT can return different results for the same request.",
-            theme = "light-border"
-          ),
+        actionButton("submit_button", strong("Submit")),
+        tags$head(tags$style(
+          "#submit_button{font-size: 16px;color: red}"
+        )),
+        tippy::tippy_this(
+          "submit_button",
+          "ChatGPT can return different results for the same request.",
+          theme = "light-border"
         ),
-        column(
-          width = 6,
-          downloadButton(
-            outputId = "report",
-            label = "Report"
-          ),
-          tippy::tippy_this(
-            "report",
-            "Download a HTML report for this session.",
-            theme = "light-border"
-          )
-        )
-
-      ),
       br(),
       textOutput("usage"),
       textOutput("total_cost"),
       br(),
       fluidRow(
         column(
-          width = 6
-
+          width = 6,
+          uiOutput("html_report")
         ),
         column(
           width = 6,
