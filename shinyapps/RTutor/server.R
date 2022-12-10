@@ -117,7 +117,7 @@ The generated code only works correctly some of the times."
 
     selectInput(
       inputId = "select_data",
-      label = "Demo Data",
+      label = "Demo data",
       choices = datasets,
       selected = "mpg",
       multiple = FALSE,
