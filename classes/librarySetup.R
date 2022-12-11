@@ -1,4 +1,5 @@
 list_packages <- c(
+  "remotes",
   "shiny",
   "openai",
   "tidyverse",
@@ -75,11 +76,7 @@ list_packages <- c(
   "lubridate"
 
   #--Data visualization--
-
-
-
-
 )
 install.packages(list_packages)
 
-
+remotes::install_github("gexijin/RTutor", upgrade = "never")
