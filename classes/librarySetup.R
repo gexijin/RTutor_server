@@ -91,7 +91,6 @@ new_pacakge <- setdiff(all, installed)
 
 # get download statistics for all CRAN packages
 remotes::install_github("r-hub/cranlogs")
-
 dls <- sapply(
   new_pacakge, #[1:1000], 
   function(p) {
