@@ -77,46 +77,83 @@ list_packages <- c(
 
   #--Data visualization--
 )
-#install.packages(list_packages)
+
+install.packages(list_packages)
 
 remotes::install_github("gexijin/RTutor", upgrade = "never")
 
-# Install top 5000 packages from CRAN
-
-# list of all available packages
+# Install top 1000 packages from CRAN
 all <- available.packages()
 all <- as.vector(all[, 1])
-installed <- .packages(all.available = TRUE)
-new_pacakge <- setdiff(all, installed)
+all <- sort(all)
+cat("Total packages:", length(all))
+
 
 # get download statistics for all CRAN packages
+if (!require("remotes", quietly = TRUE))
+  install.packages("remotes")
+
 remotes::install_github("r-hub/cranlogs")
-dls <- sapply(
-  new_pacakge, #[1:1000], 
-  function(p) {
-    sum(cranlogs::cran_downloads(
-      package = p, 
-      from = "2022-01-01", 
-      to = "2022-12-15"
-    )$count)
-  }
-)
 
+# download the packages for the last 6 months
+start_time <- Sys.time()
 
-# Rank
-dls <- sort(dls, decreasing = TRUE)
-top <- 5000
-
-missedPackages <- names(dls[1:top])
-
-for (i in 1:length(missedPackages))
-{
-  pkgName <- missedPackages[i]
-  install.packages(
-    pkgName, 
-    upgrade = "never",
-    quiet = TRUE,
-    Ncpus = 2
-  )
+dls <- rep(0, length(all))
+#dls <- rep(0, 100)
+#for(i in 1:100) {
+for(i in 1:length(all)) {
+  if(i %% 100 == 0)
+    cat("\n", i, "/", length(all))
+  dls[i] <- sum(cranlogs::cran_downloads(
+    package = all[i], 
+    from = "2022-07-01", 
+    to = "2022-12-15"
+  )$count)
 }
-print("END")
+
+api_time <- difftime(
+  Sys.time(),
+  start_time,
+  units = "secs"
+)[[1]]
+
+cat("\n", api_time/60, " minutes")
+names(dls) <- all
+#names(dls) <- all[1:100]
+# Rank
+dls<- sort(dls, decreasing = TRUE)
+head(dls)
+
+dls <- names(dls)
+
+save.image("savedImage.Rdata")
+
+
+
+
+#  load("savedImage.Rdata")
+
+start = 1
+end = 1000
+
+for (i in start:min(end, length(dls))) {
+  cat("\n", i, "/", end, dls[i], " ")   
+  if(!(dls[i] %in% .packages(all.available = TRUE))) {  
+    cat("Installing... ")    
+    try(
+      install.packages(
+        dls[i], 
+        upgrade = "never",
+        quiet = TRUE,
+        Ncpus = 2
+      )
+    )
+  }
+}
+
+suc <- sum( dls[start:end] %in% .packages(all.available = TRUE))
+
+cat("END\n", suc, "/", end - start + 1, " succeeded.")
+cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
+
+
