@@ -131,10 +131,12 @@ save.image("savedImage.Rdata")
 
 
 
-#  load("savedImage.Rdata")
+
 
 start = 1
 end = 1000
+
+#  load("savedImage.Rdata")
 
 for (i in start:min(end, length(dls))) {
   cat("\n", i, "/", end, dls[i], " ")   
