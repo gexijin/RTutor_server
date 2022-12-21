@@ -1,2 +1,3 @@
-sudo docker-compose down
-sudo docker-compose up -d --scale webapp=2
+echo $(date) >> /home/ubuntu/log.txt
+sudo docker-compose -f /home/ubuntu/RTutor_server/docker-compose.yml down
+sudo docker-compose -f /home/ubuntu/RTutor_server/docker-compose.yml up -d --scale webapp=30
