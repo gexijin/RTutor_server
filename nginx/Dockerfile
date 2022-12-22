@@ -10,8 +10,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # for HTTPS
 RUN mkdir -p /etc/pki/nginx/private
-COPY /etc/letsencrypt/live/bcloud.org/fullchain.pem /etc/pki/nginx/server.crt
-COPY /etc/letsencrypt/live/bcloud.org/privkey.pem /etc/pki/nginx/private/server.key
+COPY fullchain.pem /etc/pki/nginx/server.crt
+COPY privkey.pem /etc/pki/nginx/private/server.key
 RUN chown nginx /etc/pki/nginx/server.crt /etc/pki/nginx/private/server.key
 
 
