@@ -159,3 +159,40 @@ cat("END\n", suc, "/", end - start + 1, " succeeded.")
 cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 
+
+# install bioconductor packages
+# https://bioconductor.org/packages/stats/
+
+bioc <- read.table(
+  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab", 
+  header = TRUE
+)
+
+bioc <- bioc[order(-bioc$Download_score),]
+dls <- bioc$Package
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "3.16")
+
+start = 11
+end = 100
+
+#  load("savedImage.Rdata")
+
+for (i in start:min(end, length(dls))) {
+  cat("\n", i, "/", end, dls[i], " ")
+  if(!(dls[i] %in% .packages(all.available = TRUE))) {
+    cat("Installing... ")
+    try(
+      BiocManager::install(
+        pkgs = dls[i], 
+        upgrade = FALSE,
+        ask = FALSE,
+        upgrade = "never",
+        quiet = TRUE,
+        Ncpus = 2
+      )
+    )
+  }
+}
