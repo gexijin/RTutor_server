@@ -175,8 +175,8 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(version = "3.16")
 
-start <- 11
-end <- 100
+start <- 101
+end <- 150
 
 
 
