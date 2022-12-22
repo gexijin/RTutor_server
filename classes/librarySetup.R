@@ -175,10 +175,10 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(version = "3.16")
 
-start = 11
-end = 100
+start <- 11
+end <- 100
 
-#  load("savedImage.Rdata")
+
 
 for (i in start:min(end, length(dls))) {
   cat("\n", i, "/", end, dls[i], " ")
