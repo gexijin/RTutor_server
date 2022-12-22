@@ -162,6 +162,13 @@ cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 # install bioconductor packages
 # https://bioconductor.org/packages/stats/
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(version = "3.16")
+
+start <- 150
+end <- 300
 
 bioc <- read.table(
   "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab", 
@@ -170,15 +177,6 @@ bioc <- read.table(
 
 bioc <- bioc[order(-bioc$Download_score),]
 dls <- bioc$Package
-
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install(version = "3.16")
-
-start <- 101
-end <- 150
-
-
 
 for (i in start:min(end, length(dls))) {
   cat("\n", i, "/", end, dls[i], " ")
