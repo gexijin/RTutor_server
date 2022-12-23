@@ -162,13 +162,14 @@ cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 # install bioconductor packages
 # https://bioconductor.org/packages/stats/
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") 
+  BiocManager::install(version = "3.16")
+}
 
-BiocManager::install(version = "3.16")
 
-start <- 150
-end <- 300
+start <- 501
+end <- 600
 
 bioc <- read.table(
   "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab", 
