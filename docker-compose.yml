@@ -3,6 +3,10 @@ services:
   webapp:
     build: .
     image: webapp
+    mem_limit: 3g
+    mem_reservation: 2g
+    mem_swappiness: 5
+    cpus: "1.5"
     env_file:
      - api.env
     expose:
@@ -23,3 +27,4 @@ services:
         - webapp
     ports:
         - "80:80"
+        - "443:443"

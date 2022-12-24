@@ -132,7 +132,7 @@ save.image("savedImage.Rdata")
 
 
 
-
+#CRAN finished 1-6000  12/24/2022
 start = 1
 end = 1000
 
@@ -162,23 +162,26 @@ cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 # install bioconductor packages
 # https://bioconductor.org/packages/stats/
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") 
+  BiocManager::install(version = "3.16")
+}
+
+
+start <- 11
+end <- 30
 
 bioc <- read.table(
-  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab", 
+  # software packages; finished 1-500
+#  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",   
+  # annotation packages; finished 1-30
+  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
+
   header = TRUE
 )
 
 bioc <- bioc[order(-bioc$Download_score),]
 dls <- bioc$Package
-
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install(version = "3.16")
-
-start <- 11
-end <- 100
-
-
 
 for (i in start:min(end, length(dls))) {
   cat("\n", i, "/", end, dls[i], " ")
