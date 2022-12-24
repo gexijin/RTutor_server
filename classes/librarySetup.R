@@ -168,14 +168,18 @@ if (!require("BiocManager", quietly = TRUE)) {
 }
 
 
-start <- 11
-end <- 30
+start <- 1
+end <- 15
 
 bioc <- read.table(
   # software packages; finished 1-500
-#  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",   
+#  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",
+
   # annotation packages; finished 1-30
-  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
+#  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
+
+   #experiment data package; finished 1-15
+  "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
 
   header = TRUE
 )
