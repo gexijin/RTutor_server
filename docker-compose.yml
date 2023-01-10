@@ -3,9 +3,9 @@ services:
   webapp:
     build: .
     image: webapp
-    mem_limit: 3g
-    mem_reservation: 2g
-    mem_swappiness: 5
+    mem_limit: 10g
+    mem_reservation: 8g
+    mem_swappiness: 20
     cpus: "1.5"
     env_file:
      - api.env
