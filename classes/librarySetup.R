@@ -96,7 +96,7 @@ if (!require("remotes", quietly = TRUE))
 
 remotes::install_github("r-hub/cranlogs")
 
-# download the packages for the last 6 months
+# download the packages stats for the last 6 months
 start_time <- Sys.time()
 
 dls <- rep(0, length(all))
@@ -106,9 +106,9 @@ for(i in 1:length(all)) {
   if(i %% 100 == 0)
     cat("\n", i, "/", length(all))
   dls[i] <- sum(cranlogs::cran_downloads(
-    package = all[i], 
-    from = "2022-07-01", 
-    to = "2022-12-15"
+    package = all[i],
+    from = "2023-01-01",
+    to = "2023-06-15"
   )$count)
 }
 
@@ -124,33 +124,40 @@ names(dls) <- all
 # Rank
 dls<- sort(dls, decreasing = TRUE)
 head(dls)
+cran_packages <- dls
 
 dls <- names(dls)
 
 save.image("savedImage.Rdata")
 
-
-
-
+system("sudo apt install libbz2-dev")
+system("sudo apt install libclang-dev")
+system("sudo apt install libglpk-dev") #igraph
 
 #CRAN finished 1-6000  12/24/2022
-start = 1
-end = 1000
+start <- 1
+end <- 1000
 
 #  load("savedImage.Rdata")
 
-for (i in start:min(end, length(dls))) {
-  cat("\n", i, "/", end, dls[i], " ")   
-  if(!(dls[i] %in% .packages(all.available = TRUE))) {  
-    cat("Installing... ")    
-    try(
-      install.packages(
-        dls[i], 
-        upgrade = "never",
-        quiet = TRUE,
-        Ncpus = 2
+
+# install a list of packages from CRAN
+install <- function(pkgs){
+  for (i in 1:length(pkgs)) {
+    cat("\n", i, "/", length(pkgs), pkgs[i], " ")
+
+    # already installed?
+    if(!(dls[i] %in% .packages(all.available = TRUE))) {
+      cat("Installing... ")
+      try(
+        install.packages(
+          pkgs[i],
+          upgrade = "never",
+          quiet = TRUE,
+          Ncpus = 2
+        )
       )
-    )
+    }
   }
 }
 
@@ -159,28 +166,37 @@ suc <- sum( dls[start:end] %in% .packages(all.available = TRUE))
 cat("END\n", suc, "/", end - start + 1, " succeeded.")
 cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
+# list ones that are not installed.
+
+
+ dls[!(dls[start:end] %in% .packages(all.available = TRUE))]
+
+
 
 
 # install bioconductor packages
 # https://bioconductor.org/packages/stats/
 if (!require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager") 
-  BiocManager::install(version = "3.16")
+  BiocManager::install(version = "3.17")
 }
 
 
+
+
+
 start <- 1
-end <- 15
+end <- 500
 
 bioc <- read.table(
   # software packages; finished 1-500
-#  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",
+  "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",
 
   # annotation packages; finished 1-30
 #  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
 
    #experiment data package; finished 1-15
-  "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
+ # "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
 
   header = TRUE
 )
@@ -188,21 +204,32 @@ bioc <- read.table(
 bioc <- bioc[order(-bioc$Download_score),]
 dls <- bioc$Package
 
-for (i in start:min(end, length(dls))) {
-  cat("\n", i, "/", end, dls[i], " ")
-  if(!(dls[i] %in% .packages(all.available = TRUE))) {
-    cat("Installing... ")
-    try(
-      BiocManager::install(
-        pkgs = dls[i], 
-        upgrade = FALSE,
-        ask = FALSE,
-        upgrade = "never",
-        quiet = TRUE,
-        Ncpus = 2
+
+# install a list of packages from Bioconductor
+install_bioc <- function(pkgs) {
+  for (i in 1:length(pkgs)) {
+    cat("\n", i, "/", length(pkgs), pkgs[i], " ")
+
+    # already installed?
+    if(!(dls[i] %in% .packages(all.available = TRUE))) {
+      cat("Installing... ")
+      try(
+        BiocManager::install(
+          pkgs = pkgs[i],
+          upgrade = FALSE,
+          ask = FALSE,
+          upgrade = "never",
+          quiet = TRUE,
+          Ncpus = 2
+        )
       )
-    )
+    }
   }
 }
+
+install_bioc(dls[1:100])
+
+
+
 
 }
