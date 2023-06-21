@@ -82,6 +82,7 @@ install.packages(list_packages)
 
 remotes::install_github("gexijin/RTutor", upgrade = "never")
 
+if(0){
 # Install top 1000 packages from CRAN
 all <- available.packages()
 all <- as.vector(all[, 1])
@@ -202,4 +203,6 @@ for (i in start:min(end, length(dls))) {
       )
     )
   }
+}
+
 }
