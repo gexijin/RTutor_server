@@ -83,20 +83,42 @@ install.packages(list_packages)
 remotes::install_github("gexijin/RTutor", upgrade = "never")
 
 if(0){
-# Install top 1000 packages from CRAN
+
+#1. Install Linux libraries--------------------------------------
+system("sudo apt install libbz2-dev")
+system("sudo apt install libclang-dev")
+system("sudo apt install libglpk-dev") #igraph
+
+
+# 2. List of all CRAN packages--------------------------------------
 all <- available.packages()
 all <- as.vector(all[, 1])
 all <- sort(all)
 cat("Total packages:", length(all))
 
 
-# get download statistics for all CRAN packages
+
+# 3. Install remotes, cranlogs, and BiocManager------------------
 if (!require("remotes", quietly = TRUE))
   install.packages("remotes")
-
+if (!require("cranlogs", quietly = TRUE))
 remotes::install_github("r-hub/cranlogs")
 
+# install bioconductor packages
+
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") 
+  BiocManager::install(version = "3.17")
+}
+# https://bioconductor.org/packages/stats/
+
+
+
+
+
+# 4. get download statistics for all CRAN packages-------------------------
 # download the packages stats for the last 6 months
+
 start_time <- Sys.time()
 
 dls <- rep(0, length(all))
@@ -108,7 +130,7 @@ for(i in 1:length(all)) {
   dls[i] <- sum(cranlogs::cran_downloads(
     package = all[i],
     from = "2023-01-01",
-    to = "2023-06-15"
+    to = "2023-06-21"
   )$count)
 }
 
@@ -124,30 +146,20 @@ names(dls) <- all
 # Rank
 dls<- sort(dls, decreasing = TRUE)
 head(dls)
-cran_packages <- dls
-
-dls <- names(dls)
-
-save.image("savedImage.Rdata")
-
-system("sudo apt install libbz2-dev")
-system("sudo apt install libclang-dev")
-system("sudo apt install libglpk-dev") #igraph
-
-#CRAN finished 1-6000  12/24/2022
-start <- 1
-end <- 1000
-
-#  load("savedImage.Rdata")
+cran_packages_stats <- dls
+cran_pkgs <- names(cran_packages)
 
 
-# install a list of packages from CRAN
-install <- function(pkgs){
+
+# 5. Install top CRAN packages----------------------------------------------
+
+# Function install a list of packages from CRAN
+install_cran <- function(pkgs) {
   for (i in 1:length(pkgs)) {
     cat("\n", i, "/", length(pkgs), pkgs[i], " ")
 
     # already installed?
-    if(!(dls[i] %in% .packages(all.available = TRUE))) {
+    if(!(pkgs[i] %in% .packages(all.available = TRUE))) {
       cat("Installing... ")
       try(
         install.packages(
@@ -161,57 +173,52 @@ install <- function(pkgs){
   }
 }
 
-suc <- sum( dls[start:end] %in% .packages(all.available = TRUE))
-
+start <- 1
+end <- 10
+install_cran(cran_pkgs[start:end])
+suc <- sum( cran_pkgs[start:end] %in% .packages(all.available = TRUE))
 cat("END\n", suc, "/", end - start + 1, " succeeded.")
 cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 # list ones that are not installed.
-
-
- dls[!(dls[start:end] %in% .packages(all.available = TRUE))]
-
+cran_pkgs[!(cran_pkgs[start:end] %in% .packages(all.available = TRUE))]
 
 
 
-# install bioconductor packages
-# https://bioconductor.org/packages/stats/
-if (!require("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager") 
-  BiocManager::install(version = "3.17")
-}
+# 6. Download statistics for bioconductor packages------------------------------------------
 
-
-
-
-
-start <- 1
-end <- 500
-
-bioc <- read.table(
+bioc1 <- read.table(
   # software packages; finished 1-500
   "https://bioconductor.org/packages/stats/bioc/bioc_pkg_scores.tab",
-
+  header = TRUE
+)
+bioc2 <- read.table(
   # annotation packages; finished 1-30
-#  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
-
-   #experiment data package; finished 1-15
- # "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
-
+  "https://bioconductor.org/packages/stats/data-annotation/annotation_pkg_scores.tab",
   header = TRUE
 )
 
+bioc3 <- read.table(
+   #experiment data package; finished 1-15
+  "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
+  header = TRUE
+)
+bioc <- rbind(bioc1, bioc2, bioc3)
 bioc <- bioc[order(-bioc$Download_score),]
-dls <- bioc$Package
+bioc <- bioc[!duplicated(bioc$Package),]
+
+bioc_pkgs <- bioc$Package
 
 
+
+#7 Install top Bioconductor packages ----------------------------------------------
 # install a list of packages from Bioconductor
 install_bioc <- function(pkgs) {
   for (i in 1:length(pkgs)) {
     cat("\n", i, "/", length(pkgs), pkgs[i], " ")
 
     # already installed?
-    if(!(dls[i] %in% .packages(all.available = TRUE))) {
+    if(!(pkgs[i] %in% .packages(all.available = TRUE))) {
       cat("Installing... ")
       try(
         BiocManager::install(
@@ -227,8 +234,26 @@ install_bioc <- function(pkgs) {
   }
 }
 
-install_bioc(dls[1:100])
 
+start = 1
+end = 50
+install_bioc(bioc_pkgs[start:end])
+
+
+# 8. Install CRAN and Bioc packages
+
+install_cran(cran_pkgs[1:2000])
+system("sudo docker commit 0281f7271a27 webapp")
+
+install_bioc(bioc_pkgs[1:100])
+system("sudo docker commit 0281f7271a27 webapp")
+
+
+install_cran(cran_pkgs[1:4000])
+system("sudo docker commit 0281f7271a27 webapp")
+
+install_bioc(bioc_pkgs[1:200])
+system("sudo docker commit 0281f7271a27 webapp")
 
 
 
