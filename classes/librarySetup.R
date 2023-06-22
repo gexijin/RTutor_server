@@ -82,7 +82,7 @@ install.packages(list_packages)
 
 remotes::install_github("gexijin/RTutor", upgrade = "never")
 
-if(0){
+if(0){  # Run these manually
 
 #1. Install Linux libraries--------------------------------------
 system("sudo apt install libbz2-dev")
@@ -243,17 +243,17 @@ install_bioc(bioc_pkgs[start:end])
 # 8. Install CRAN and Bioc packages
 
 install_cran(cran_pkgs[1:2000])
-system("sudo docker commit 0281f7271a27 webapp")
+system("sudo docker commit 7c3b94767cce webapp")
 
 install_bioc(bioc_pkgs[1:100])
-system("sudo docker commit 0281f7271a27 webapp")
+system("sudo docker commit 7c3b94767cce webapp")
 
 
 install_cran(cran_pkgs[1:4000])
-system("sudo docker commit 0281f7271a27 webapp")
+system("sudo docker commit 7c3b94767cce webapp")
 
 install_bioc(bioc_pkgs[1:200])
-system("sudo docker commit 0281f7271a27 webapp")
+system("sudo docker commit 7c3b94767cce webapp")
 
 
 
