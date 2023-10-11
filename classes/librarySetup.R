@@ -88,17 +88,14 @@ if(0){  # Run these manually
 system("sudo apt install libbz2-dev")
 system("sudo apt install libclang-dev")
 system("sudo apt install libglpk-dev") #igraph
+system("sudo apt install libtcl")
+system("sudo apt install libtk")
+system("sudo apt install libproj-dev")
+system("sudo apt install libpq-dev gdal-bin libgdal-dev") #terra
+system("apt-get update && sudo apt install default-jdk ") #installs Java for pathfindR 
+system("sudo apt install libudunits2-dev libgsl-dev libglu1-mesa libsecret-1-0 librdf-dev") #choroplethr
 
-
-# 2. List of all CRAN packages--------------------------------------
-all <- available.packages()
-all <- as.vector(all[, 1])
-all <- sort(all)
-cat("Total packages:", length(all))
-
-
-
-# 3. Install remotes, cranlogs, and BiocManager------------------
+# 2. Install remotes, cranlogs, and BiocManager------------------
 if (!require("remotes", quietly = TRUE))
   install.packages("remotes")
 if (!require("cranlogs", quietly = TRUE))
@@ -114,10 +111,14 @@ if (!require("BiocManager", quietly = TRUE)) {
 
 
 
-
-
-# 4. get download statistics for all CRAN packages-------------------------
+# 3. get download statistics for all CRAN packages-------------------------
 # download the packages stats for the last 6 months
+
+#List of all CRAN packages
+all <- available.packages()
+all <- as.vector(all[, 1])
+all <- sort(all)
+cat("Total packages:", length(all))
 
 start_time <- Sys.time()
 
@@ -147,11 +148,11 @@ names(dls) <- all
 dls<- sort(dls, decreasing = TRUE)
 head(dls)
 cran_packages_stats <- dls
-cran_pkgs <- names(cran_packages)
+cran_pkgs <- names(cran_packages_stats)
 
 
 
-# 5. Install top CRAN packages----------------------------------------------
+# 4. Install top CRAN packages----------------------------------------------
 
 # Function install a list of packages from CRAN
 install_cran <- function(pkgs) {
@@ -174,7 +175,7 @@ install_cran <- function(pkgs) {
 }
 
 start <- 1
-end <- 10
+end <- 100
 install_cran(cran_pkgs[start:end])
 suc <- sum( cran_pkgs[start:end] %in% .packages(all.available = TRUE))
 cat("END\n", suc, "/", end - start + 1, " succeeded.")
@@ -185,7 +186,7 @@ cran_pkgs[!(cran_pkgs[start:end] %in% .packages(all.available = TRUE))]
 
 
 
-# 6. Download statistics for bioconductor packages------------------------------------------
+# 5. Download statistics for bioconductor packages------------------------------------------
 
 bioc1 <- read.table(
   # software packages; finished 1-500
@@ -203,7 +204,7 @@ bioc3 <- read.table(
   "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
   header = TRUE
 )
-bioc <- rbind(bioc1, bioc2, bioc3)
+bioc <- rbind(bioc1, bioc2) #, bioc3)
 bioc <- bioc[order(-bioc$Download_score),]
 bioc <- bioc[!duplicated(bioc$Package),]
 
@@ -211,7 +212,7 @@ bioc_pkgs <- bioc$Package
 
 
 
-#7 Install top Bioconductor packages ----------------------------------------------
+#6 Install top Bioconductor packages ----------------------------------------------
 # install a list of packages from Bioconductor
 install_bioc <- function(pkgs) {
   for (i in 1:length(pkgs)) {
@@ -227,7 +228,8 @@ install_bioc <- function(pkgs) {
           ask = FALSE,
           upgrade = "never",
           quiet = TRUE,
-          Ncpus = 2
+          Ncpus = 2,
+          INSTALL_opts = '--no-lock'
         )
       )
     }
@@ -239,22 +241,55 @@ start = 1
 end = 50
 install_bioc(bioc_pkgs[start:end])
 
-
-# 8. Install CRAN and Bioc packages
+# 7. Install CRAN and Bioc packages
 
 install_cran(cran_pkgs[1:2000])
-system("sudo docker commit 7c3b94767cce webapp")
-
 install_bioc(bioc_pkgs[1:100])
-system("sudo docker commit 7c3b94767cce webapp")
+# sudo docker commit 232342342342  webapp
+# sudo docker system prune 
+
+install_cran(cran_pkgs[2001:3000])
+install_bioc(bioc_pkgs[106:200])
+# sudo docker commit 232342342342  webapp
+# sudo docker system prune 
+
+install_cran(cran_pkgs[3001:4000])
+install_bioc(bioc_pkgs[201:300])
+# sudo docker commit 232342342342  webapp
+# sudo docker system prune 
+
+install_cran(cran_pkgs[4001:5000])
+install_bioc(bioc_pkgs[301:400])
+# sudo docker commit 232342342342  webapp
+# sudo docker system prune 
+
+install_cran(cran_pkgs[5001:6000])
+install_bioc(bioc_pkgs[401:500])
+
+install_cran(cran_pkgs[6001:7000])
+install_bioc(bioc_pkgs[501:600])
 
 
-install_cran(cran_pkgs[1:4000])
-system("sudo docker commit 7c3b94767cce webapp")
+install_cran(cran_pkgs[7001:8000])
 
-install_bioc(bioc_pkgs[1:200])
-system("sudo docker commit 7c3b94767cce webapp")
+install_cran(cran_pkgs[8001:10000])
+
+install_cran(cran_pkgs[10001:12000]) #done
 
 
 
+
+install_cran(cran_pkgs[12001:15000]) #done
+install_bioc(bioc_pkgs[1001:2000])
+
+# List packages with large storage
+# cd /usr/local/lib/R/site-library
+# du -hs * | sort -h -r | more
+
+# Delete temp files in the container, older than 1 day
+#sudo find /tmp -type f -atime +1 -delete
+
+# remove some of the packages that are huge
+
+length(.packages(all.available = TRUE))
 }
