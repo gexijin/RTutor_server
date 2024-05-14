@@ -3,8 +3,8 @@ services:
   webapp:
     build: .
     image: webapp
-    mem_limit: 10g
-    mem_reservation: 8g
+    mem_limit: 6g
+    mem_reservation: 6g
     mem_swappiness: 20
     cpus: "1.5"
     env_file:
@@ -27,4 +27,3 @@ services:
         - webapp
     ports:
         - "80:80"
-        - "443:443"
