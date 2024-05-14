@@ -4,9 +4,9 @@ services:
     build: .
     image: webapp
     mem_limit: 6g
-    mem_reservation: 6g
+    mem_reservation: 2g
     mem_swappiness: 20
-    cpus: "1.5"
+    cpus: "2.0"
     env_file:
      - api.env
     expose:
@@ -22,7 +22,7 @@ services:
   nginx:
     build: ./nginx
     image: nginx
-    cpus: 0.1
+    cpus: "0.5"
     links:
         - webapp
     ports:
