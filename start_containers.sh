@@ -1,10 +1,11 @@
-#!/bin/bash
+# Check if the number of loops is provided as an argument
+if [ -z "$1" ]; then
+  echo "Usage: $0 <number_of_loops>"
+  exit 1
+fi
 
-# Navigate to the idep directory
-cd /home/ubuntu/RTutor_server
-
-# Loop to create and start 50 Docker containers
-for i in $(seq 1 64)
+# Loop to create and start Docker containers based on the passed argument
+for i in $(seq 1 $1)
 do
     # Correctly format the port number to include leading zero for single digit
     port=$(printf "50%02d" $i)
