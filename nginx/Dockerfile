@@ -13,5 +13,8 @@ RUN mkdir -p /etc/pki/nginx/private
 COPY fullchain.pem /etc/pki/nginx/server.crt
 COPY privkey.pem /etc/pki/nginx/private/server.key
 RUN chown nginx /etc/pki/nginx/server.crt /etc/pki/nginx/private/server.key
-
+# for UIUC.RTutor.ai
+COPY uiuc_fullchain.pem /etc/pki/nginx/uiuc_server.crt
+COPY uiuc_privkey.pem /etc/pki/nginx/private/uiuc_server.key
+RUN chown nginx /etc/pki/nginx/uiuc_server.crt /etc/pki/nginx/private/uiuc_server.key
 
