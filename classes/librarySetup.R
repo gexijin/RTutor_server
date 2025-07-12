@@ -93,7 +93,7 @@ system("sudo apt install libtk")
 system("sudo apt install libproj-dev")
 system("sudo apt install libpq-dev gdal-bin libgdal-dev") #terra
 system("apt-get update && sudo apt install default-jdk ") #installs Java for pathfindR 
-system("sudo apt install libudunits2-dev libgsl-dev libglu1-mesa libsecret-1-0 librdf-dev") #choroplethr
+system("sudo apt install libudunits2-dev libgsl-dev libglu1-mesa libsecret-1-0 librdf-dev libglpk40") #choroplethr
 
 # 2. Install remotes, cranlogs, and BiocManager------------------
 if (!require("remotes", quietly = TRUE))
@@ -101,13 +101,6 @@ if (!require("remotes", quietly = TRUE))
 if (!require("cranlogs", quietly = TRUE))
 remotes::install_github("r-hub/cranlogs")
 
-# install bioconductor packages
-
-if (!require("BiocManager", quietly = TRUE)) {
-  install.packages("BiocManager") 
-  BiocManager::install(version = "3.17")
-}
-# https://bioconductor.org/packages/stats/
 
 
 
@@ -125,14 +118,27 @@ start_time <- Sys.time()
 dls <- rep(0, length(all))
 #dls <- rep(0, 100)
 #for(i in 1:100) {
-for(i in 1:length(all)) {
-  if(i %% 100 == 0)
-    cat("\n", i, "/", length(all))
-  dls[i] <- sum(cranlogs::cran_downloads(
-    package = all[i],
-    from = "2023-01-01",
-    to = "2023-06-21"
-  )$count)
+
+#if RDS file exists, load it
+if (file.exists("cran_downloads.rds")) {
+  dls <- readRDS("cran_downloads.rds")
+  cat("\nLoaded existing download stats from cran_downloads.rds\n")
+} else {
+  for(i in 1:length(all)) {
+    if(i %% 500 == 0)
+      cat("\n", i, "/", length(all))
+      Sys.sleep(5) # to avoid API rate limit
+    dls[i] <- sum(cranlogs::cran_downloads(
+      package = all[i],
+      from = "2025-05-01",
+      to = "2025-07-10"
+    )$count)
+  }
+  names(dls) <- all
+  dls<- sort(dls, decreasing = TRUE)
+
+  # save as RDS file
+  saveRDS(dls, "cran_downloads.rds")
 }
 
 api_time <- difftime(
@@ -142,10 +148,9 @@ api_time <- difftime(
 )[[1]]
 
 cat("\n", api_time/60, " minutes")
-names(dls) <- all
+
 #names(dls) <- all[1:100]
 # Rank
-dls<- sort(dls, decreasing = TRUE)
 head(dls)
 cran_packages_stats <- dls
 cran_pkgs <- names(cran_packages_stats)
@@ -174,12 +179,21 @@ install_cran <- function(pkgs) {
   }
 }
 
-start <- 1
-end <- 100
+# install first 100 packages
+start <- 1; end <- 100
 install_cran(cran_pkgs[start:end])
 suc <- sum( cran_pkgs[start:end] %in% .packages(all.available = TRUE))
 cat("END\n", suc, "/", end - start + 1, " succeeded.")
 cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
+
+
+# install the rest of the packages in batches of 1000
+for ( 1 in 1:24) {
+  install_cran(cran_pkgs[(i-1)*1000+1:i*1000])
+  # stop by 3 seconds
+  Sys.sleep(3)
+}
+
 
 # list ones that are not installed.
 cran_pkgs[!(cran_pkgs[start:end] %in% .packages(all.available = TRUE))]
@@ -187,6 +201,17 @@ cran_pkgs[!(cran_pkgs[start:end] %in% .packages(all.available = TRUE))]
 
 
 # 5. Download statistics for bioconductor packages------------------------------------------
+
+
+# install bioconductor packages
+
+if (!require("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager") 
+  BiocManager::install(version = "3.21")
+}
+# https://bioconductor.org/packages/stats/
+
+
 
 bioc1 <- read.table(
   # software packages; finished 1-500
@@ -236,51 +261,23 @@ install_bioc <- function(pkgs) {
   }
 }
 
-
+# total 5600 packages
+# install first 5 packages
 start = 1
-end = 50
+end = 5
 install_bioc(bioc_pkgs[start:end])
+
+# install the rest of the packages in batches of 100
+for ( i in 1:16) {
+  install_bioc(bioc_pkgs[(i-1)*100+1:i*100])
+  # stop by 3 seconds
+  Sys.sleep(3)
+}
+
+
 
 # 7. Install CRAN and Bioc packages
 
-install_cran(cran_pkgs[1:2000])
-install_bioc(bioc_pkgs[1:100])
-# sudo docker commit 232342342342  webapp
-# sudo docker system prune 
-
-install_cran(cran_pkgs[2001:3000])
-install_bioc(bioc_pkgs[106:200])
-# sudo docker commit 232342342342  webapp
-# sudo docker system prune 
-
-install_cran(cran_pkgs[3001:4000])
-install_bioc(bioc_pkgs[201:300])
-# sudo docker commit 232342342342  webapp
-# sudo docker system prune 
-
-install_cran(cran_pkgs[4001:5000])
-install_bioc(bioc_pkgs[301:400])
-# sudo docker commit 232342342342  webapp
-# sudo docker system prune 
-
-install_cran(cran_pkgs[5001:6000])
-install_bioc(bioc_pkgs[401:500])
-
-install_cran(cran_pkgs[6001:7000])
-install_bioc(bioc_pkgs[501:600])
-
-
-install_cran(cran_pkgs[7001:8000])
-
-install_cran(cran_pkgs[8001:10000])
-
-install_cran(cran_pkgs[10001:12000]) #done
-
-
-
-
-install_cran(cran_pkgs[12001:15000]) #done
-install_bioc(bioc_pkgs[1001:2000])
 
 # List packages with large storage
 # cd /usr/local/lib/R/site-library
@@ -292,4 +289,54 @@ install_bioc(bioc_pkgs[1001:2000])
 # remove some of the packages that are huge
 
 length(.packages(all.available = TRUE))
+
+
+
+# 8. Install Python packages 
+library(reticulate)
+library(readr)
+library(dplyr)
+
+env <- "r-reticulate"
+
+# Create env if it doesn't exist, then activate it
+if (!env %in% conda_list()$name) {
+  message("Creating conda environment '", env, "' …")
+  conda_create(envname = env)
+}
+use_condaenv(env, required = TRUE)
+
+# ---- fetch the package list ----
+csv_url <- "https://hugovk.github.io/top-pypi-packages/top-pypi-packages.csv"
+tmpfile <- tempfile(fileext = ".csv")
+download.file(csv_url, tmpfile, mode = "wb")
+
+top2000 <- read_csv(tmpfile, show_col_types = FALSE) %>% 
+  slice(1:2000) %>% 
+  pull(project)
+
+# ---- install in batches of 100 ----
+batch_size <- 100
+batches <- split(top2000, ceiling(seq_along(top2000) / batch_size))
+total_batches <- length(batches)
+
+for (i in seq_along(batches)) {
+  pkg_batch <- batches[[i]]
+  start_idx  <- (i - 1) * batch_size + 1
+  end_idx    <- min(i * batch_size, length(top2000))
+  
+  message(sprintf(
+    "\nBatch %d/%d | Packages %d–%d | Installing …",
+    i, total_batches, start_idx, end_idx
+  ))
+  
+  # Use pip inside the conda env (safer: not all pkgs are on conda-forge)
+  py_install(pkg_batch, envname = env, pip = TRUE)
+  
+  message("✓ Batch ", i, " done.")
+  if (i < total_batches) Sys.sleep(5)
+}
+
+message("\nAll packages installed!")
+
 }
