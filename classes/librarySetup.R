@@ -107,55 +107,104 @@ remotes::install_github("r-hub/cranlogs")
 # 3. get download statistics for all CRAN packages-------------------------
 # download the packages stats for the last 6 months
 
-#List of all CRAN packages
-all <- available.packages()
-all <- as.vector(all[, 1])
-all <- sort(all)
-cat("Total packages:", length(all))
+# ------------------------------------------------------------
+# Read CRAN-package download counts from DataScienceMeta
+# ------------------------------------------------------------
+# packages you need
+required <- c("rvest", "dplyr", "stringr", "readr")
+invisible(lapply(required[!required %in% installed.packages()], install.packages))
+library(rvest)
+library(dplyr)
+library(stringr)
+library(readr)   # for parse_number
 
-start_time <- Sys.time()
+# URL of the ranking table
+url <- "https://www.datasciencemeta.com/rpackages"
 
-dls <- rep(0, length(all))
-#dls <- rep(0, 100)
-#for(i in 1:100) {
+# ------------------------------------------------------------------
+# 1. read the page – rvest::read_html() works because the table
+#    is rendered server-side (no JavaScript needed) :contentReference[oaicite:0]{index=0}
+# ------------------------------------------------------------------
+page <- read_html(url)
 
-#if RDS file exists, load it
-if (file.exists("cran_downloads.rds")) {
-  dls <- readRDS("cran_downloads.rds")
-  cat("\nLoaded existing download stats from cran_downloads.rds\n")
-} else {
-  for(i in 1:length(all)) {
-    if(i %% 500 == 0)
-      cat("\n", i, "/", length(all))
-      Sys.sleep(5) # to avoid API rate limit
-    dls[i] <- sum(cranlogs::cran_downloads(
-      package = all[i],
-      from = "2025-05-01",
-      to = "2025-07-10"
-    )$count)
+# ------------------------------------------------------------------
+# 2. extract the first/only table and coerce into a data frame
+# ------------------------------------------------------------------
+raw_tbl <- page %>%
+  html_element("table") %>%   # or html_nodes("table")[1] prior to rvest 1.0
+  html_table(fill = TRUE)
+
+# ------------------------------------------------------------------
+# 3. tidy it up
+# ------------------------------------------------------------------
+download_stats <- raw_tbl %>%
+  rename(
+    rank     = 1,   # column headings are “Rank”, “Package”, “Downloads”
+    package  = 2,
+    downloads = 3
+  ) %>%
+  mutate(
+    rank      = as.integer(rank),
+    downloads = parse_number(downloads)    # strip commas & make numeric
+  ) %>%
+  arrange(rank)
+
+# ------------------------------------------------------------------
+# 4. quick check
+# ------------------------------------------------------------------
+print(head(download_stats, 10))
+cran_pkgs <- download_stats$package
+
+if(0) {
+  #List of all CRAN packages
+  all <- available.packages()
+  all <- as.vector(all[, 1])
+  all <- sort(all)
+  cat("Total packages:", length(all))
+
+  start_time <- Sys.time()
+
+  dls <- rep(0, length(all))
+  #dls <- rep(0, 100)
+  #for(i in 1:100) {
+
+  #if RDS file exists, load it
+  if (file.exists("cran_downloads.rds")) {
+    dls <- readRDS("cran_downloads.rds")
+    cat("\nLoaded existing download stats from cran_downloads.rds\n")
+  } else {
+    for(i in 1:length(all)) {
+      if(i %% 500 == 0)
+        cat("\n", i, "/", length(all))
+        Sys.sleep(5) # to avoid API rate limit
+      dls[i] <- sum(cranlogs::cran_downloads(
+        package = all[i],
+        from = "2025-05-01",
+        to = "2025-07-10"
+      )$count)
+    }
+    names(dls) <- all
+    dls<- sort(dls, decreasing = TRUE)
+
+    # save as RDS file
+    saveRDS(dls, "cran_downloads.rds")
   }
-  names(dls) <- all
-  dls<- sort(dls, decreasing = TRUE)
 
-  # save as RDS file
-  saveRDS(dls, "cran_downloads.rds")
+  api_time <- difftime(
+    Sys.time(),
+    start_time,
+    units = "secs"
+  )[[1]]
+
+  cat("\n", api_time/60, " minutes")
+
+  #names(dls) <- all[1:100]
+  # Rank
+  head(dls)
+  cran_packages_stats <- dls
+  cran_pkgs <- names(cran_packages_stats)
+
 }
-
-api_time <- difftime(
-  Sys.time(),
-  start_time,
-  units = "secs"
-)[[1]]
-
-cat("\n", api_time/60, " minutes")
-
-#names(dls) <- all[1:100]
-# Rank
-head(dls)
-cran_packages_stats <- dls
-cran_pkgs <- names(cran_packages_stats)
-
-
 
 # 4. Install top CRAN packages----------------------------------------------
 
@@ -188,8 +237,9 @@ cat("\nTotal installed:", length(.packages(all.available = TRUE) ),"\n")
 
 
 # install the rest of the packages in batches of 1000
-for ( 1 in 1:24) {
-  install_cran(cran_pkgs[(i-1)*1000+1:i*1000])
+for ( i in 1:24) {
+  install_cran(cran_pkgs[((i-1)*1000+1):(i*1000)])
+  cat("\n", i, "\tTotal installed:", length(.packages(all.available = TRUE) ),"\n")
   # stop by 3 seconds
   Sys.sleep(3)
 }
@@ -311,32 +361,80 @@ csv_url <- "https://hugovk.github.io/top-pypi-packages/top-pypi-packages.csv"
 tmpfile <- tempfile(fileext = ".csv")
 download.file(csv_url, tmpfile, mode = "wb")
 
-top2000 <- read_csv(tmpfile, show_col_types = FALSE) %>% 
-  slice(1:2000) %>% 
+py_packages <- read_csv(tmpfile, show_col_types = FALSE) %>% 
   pull(project)
 
-# ---- install in batches of 100 ----
-batch_size <- 100
-batches <- split(top2000, ceiling(seq_along(top2000) / batch_size))
-total_batches <- length(batches)
+targets <- py_packages[21:50]  # top 2000 packages
 
-for (i in seq_along(batches)) {
-  pkg_batch <- batches[[i]]
-  start_idx  <- (i - 1) * batch_size + 1
-  end_idx    <- min(i * batch_size, length(top2000))
-  
-  message(sprintf(
-    "\nBatch %d/%d | Packages %d–%d | Installing …",
-    i, total_batches, start_idx, end_idx
-  ))
-  
-  # Use pip inside the conda env (safer: not all pkgs are on conda-forge)
-  py_install(pkg_batch, envname = env, pip = TRUE)
-  
-  message("✓ Batch ", i, " done.")
-  if (i < total_batches) Sys.sleep(5)
+
+install_python_packages <- function(targets, env = "r-reticulate", batch_size = 100) {
+  # ---- helper: current inventory ----
+  installed_pkgs <- function() {
+    py_list_packages(envname = env)$package %>% tolower()
+  }
+
+  have_now <- installed_pkgs()
+
+  # ---- batching ----
+  batches         <- split(targets, ceiling(seq_along(targets) / batch_size))
+  total_batches   <- length(batches)
+
+  installed_count <- 0L
+  failed_pkgs     <- character()
+
+  for (i in seq_along(batches)) {
+    todo <- setdiff(batches[[i]], have_now)   # skip what we already have
+    if (length(todo) == 0) {
+      message(glue::glue("Batch {i}/{total_batches}: nothing new, skipping."))
+    } else {
+      message(glue::glue("\nBatch {i}/{total_batches} | Installing {length(todo)} pkgs …"))
+
+      # Snapshot before install so we can detect what really succeeded
+      before <- have_now
+
+      tryCatch(
+        {
+          py_install(todo,
+                     envname     = env,
+                     pip         = TRUE,
+                     pip_options = c("--quiet", "--no-input",
+                                     "--disable-pip-version-check"))
+        },
+        error = function(e) {
+          warning("  !! pip error: ", conditionMessage(e))
+        }
+      )
+
+      # Refresh inventory & book-keeping
+      have_now <- installed_pkgs()
+      newly_added <- setdiff(have_now, before)
+      failed_this <- setdiff(todo, newly_added)
+
+      installed_count <- installed_count + length(newly_added)
+      failed_pkgs     <- union(failed_pkgs, failed_this)
+
+      message(glue::glue("  ✓ Done. Installed {length(newly_added)} new; ",
+                   "{length(failed_this)} failed."))
+    }
+
+    if (i < total_batches) Sys.sleep(5)
+  }
+
+  # ---- summary ----
+  message("\n=== Summary ===")
+  message("Total requested : ", length(targets))
+  message("Already present : ", length(targets) - installed_count - length(failed_pkgs))
+  message("Newly installed : ", installed_count)
+  message("Failed installs : ", length(failed_pkgs))
+
+  if (length(failed_pkgs)) {
+    cat("\nPackages that failed to install:\n",
+        paste(sort(failed_pkgs), collapse = ", "), "\n")
+  }
 }
 
-message("\nAll packages installed!")
+
+install_python_packages(py_packages[201:15000])
+
 
 }
