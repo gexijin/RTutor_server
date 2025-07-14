@@ -94,7 +94,8 @@ system("sudo apt install libproj-dev")
 system("sudo apt install libpq-dev gdal-bin libgdal-dev") #terra
 system("apt-get update && sudo apt install default-jdk ") #installs Java for pathfindR 
 system("sudo apt install libudunits2-dev libgsl-dev libglu1-mesa libsecret-1-0 librdf-dev libglpk40") #choroplethr
-
+system(" sudo apt-get install -y libfftw3-dev tcl-dev tk-dev")
+sudo apt-get install -y 
 # 2. Install remotes, cranlogs, and BiocManager------------------
 if (!require("remotes", quietly = TRUE))
   install.packages("remotes")
@@ -246,10 +247,12 @@ for ( i in 1:24) {
 
 
 # list ones that are not installed.
-cran_pkgs[!(cran_pkgs[start:end] %in% .packages(all.available = TRUE))]
+cran_pkgs[!(cran_pkgs[1:1000] %in% .packages(all.available = TRUE))]
 
-
-
+listA <- cran_pkgs[3001:6000]
+failed_pkgs <- listA[!(listA %in% .packages(all.available = TRUE))]
+failed_pkgs
+install.packages(failed_pkgs, upgrade = "never")
 # 5. Download statistics for bioconductor packages------------------------------------------
 
 
@@ -318,10 +321,11 @@ end = 5
 install_bioc(bioc_pkgs[start:end])
 
 # install the rest of the packages in batches of 100
-for ( i in 1:16) {
-  install_bioc(bioc_pkgs[(i-1)*100+1:i*100])
+for ( i in 1:5) {
+  install_bioc(bioc_pkgs[((i-1)*100+1):(i*100)])
   # stop by 3 seconds
-  Sys.sleep(3)
+  Sys.sleep(30)
+  cat("\n", i, "\tTotal installed:", length(.packages(all.available = TRUE)), "\n")
 }
 
 
@@ -342,7 +346,7 @@ length(.packages(all.available = TRUE))
 
 
 
-# 8. Install Python packages 
+# 8. Install Python packages ---------------------------------------------
 library(reticulate)
 library(readr)
 library(dplyr)
@@ -367,13 +371,15 @@ py_packages <- read_csv(tmpfile, show_col_types = FALSE) %>%
 targets <- py_packages[21:50]  # top 2000 packages
 
 
-install_python_packages <- function(targets, env = "r-reticulate", batch_size = 100) {
+install_python_packages <- function(targets, env = "r-reticulate", batch_size = 5) {
   # ---- helper: current inventory ----
   installed_pkgs <- function() {
     py_list_packages(envname = env)$package %>% tolower()
   }
 
   have_now <- installed_pkgs()
+  length(have_now) %>% 
+    message(glue::glue("Currently installed packages in '{env}': {length(have_now)}"))
 
   # ---- batching ----
   batches         <- split(targets, ceiling(seq_along(targets) / batch_size))
@@ -433,8 +439,9 @@ install_python_packages <- function(targets, env = "r-reticulate", batch_size = 
   }
 }
 
-
-install_python_packages(py_packages[201:15000])
+install_python_packages(py_packages[1:200])
+install_python_packages(py_packages[2540:3500])  # install the rest in batches of 60
+install_python_packages(py_packages[2601:2700])  # install the rest in batches
 
 
 }
