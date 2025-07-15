@@ -95,6 +95,7 @@ system("sudo apt install libpq-dev gdal-bin libgdal-dev") #terra
 system("apt-get update && sudo apt install default-jdk ") #installs Java for pathfindR 
 system("sudo apt install libudunits2-dev libgsl-dev libglu1-mesa libsecret-1-0 librdf-dev libglpk40") #choroplethr
 system(" sudo apt-get install -y libfftw3-dev tcl-dev tk-dev")
+system("sudo apt install libmagick++-dev") #magick
 sudo apt-get install -y 
 # 2. Install remotes, cranlogs, and BiocManager------------------
 if (!require("remotes", quietly = TRUE))
@@ -253,10 +254,11 @@ listA <- cran_pkgs[3001:6000]
 failed_pkgs <- listA[!(listA %in% .packages(all.available = TRUE))]
 failed_pkgs
 install.packages(failed_pkgs, upgrade = "never")
+
+
+
 # 5. Download statistics for bioconductor packages------------------------------------------
 
-
-# install bioconductor packages
 
 if (!require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager") 
@@ -282,7 +284,7 @@ bioc3 <- read.table(
   "https://bioconductor.org/packages/stats/data-experiment/experiment_pkg_scores.tab",
   header = TRUE
 )
-bioc <- rbind(bioc1, bioc2) #, bioc3)
+bioc <- rbind(bioc1, bioc2, bioc3)
 bioc <- bioc[order(-bioc$Download_score),]
 bioc <- bioc[!duplicated(bioc$Package),]
 
@@ -306,7 +308,7 @@ install_bioc <- function(pkgs) {
           ask = FALSE,
           upgrade = "never",
           quiet = TRUE,
-          Ncpus = 2,
+          Ncpus = 3,
           INSTALL_opts = '--no-lock'
         )
       )
@@ -321,7 +323,7 @@ end = 5
 install_bioc(bioc_pkgs[start:end])
 
 # install the rest of the packages in batches of 100
-for ( i in 1:5) {
+for ( i in 1:40) {
   install_bioc(bioc_pkgs[((i-1)*100+1):(i*100)])
   # stop by 3 seconds
   Sys.sleep(30)
