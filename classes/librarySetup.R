@@ -445,5 +445,5 @@ install_python_packages(py_packages[1:200])
 install_python_packages(py_packages[2540:3500])  # install the rest in batches of 60
 install_python_packages(py_packages[2601:2700])  # install the rest in batches
 
-
+install_python_packages(py_packages[3000:10000])  # install the rest in batches of 60
 }
