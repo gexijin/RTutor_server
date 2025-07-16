@@ -1,6 +1,6 @@
 FROM rocker/shiny-verse
 
-MAINTAINER Ge lab "xijin.ge@sdstate.edu"
+#MAINTAINER Ge lab "xijin.ge@sdstate.edu"
 RUN apt-get update || apt-get update
 RUN apt-get update -qq && apt-get install -y \
   git-core \
