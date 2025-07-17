@@ -371,18 +371,15 @@ py_packages <- read_csv(tmpfile, show_col_types = FALSE) %>%
   pull(project)
 
 #targets <- py_packages[21:50]  # top 2000 packages
-
-
-install_python_packages <- function(targets, env = "r-reticulate", batch_size = 5) {
-  # ---- helper: current inventory ----
   installed_pkgs <- function() {
     py_list_packages(envname = env)$package %>% tolower()
   }
-
   have_now <- installed_pkgs()
   length(have_now) %>% 
     message(glue::glue("Currently installed packages in '{env}': {length(have_now)}"))
 
+install_python_packages <- function(targets, env = "r-reticulate", batch_size = 5) {
+  # ---- helper: current inventory ----
   # ---- batching ----
   batches         <- split(targets, ceiling(seq_along(targets) / batch_size))
   total_batches   <- length(batches)
@@ -420,18 +417,22 @@ install_python_packages <- function(targets, env = "r-reticulate", batch_size = 
       )
 
       # Refresh inventory & book-keeping
-      have_now <- installed_pkgs()
-      newly_added <- setdiff(have_now, before)
-      failed_this <- setdiff(todo, newly_added)
+      if(0) {
+        have_now <- installed_pkgs()
+        newly_added <- setdiff(have_now, before)
+        failed_this <- setdiff(todo, newly_added)
 
-      installed_count <- installed_count + length(newly_added)
-      failed_pkgs     <- union(failed_pkgs, failed_this)
+        installed_count <- installed_count + length(newly_added)
+        failed_pkgs     <- union(failed_pkgs, failed_this)
 
-      message(glue::glue("  ✓ Done. Installed {length(newly_added)} new; ",
-                   "{length(failed_this)} failed."))
+        message(glue::glue("  ✓ Done. Installed {length(newly_added)} new; ",
+                    "{length(failed_this)} failed."))
+
+      }
+
     }
 
-    if (i < total_batches) Sys.sleep(5)
+    Sys.sleep(5)
   }
 
   # ---- summary ----
@@ -447,7 +448,7 @@ install_python_packages <- function(targets, env = "r-reticulate", batch_size = 
   }
 }
 
-install_python_packages(py_packages[10000:10002], batch_size = 5)  # install the rest in batches of 60
+install_python_packages(py_packages[1:500], batch_size = 1)  # install the rest in batches of 60
 install_python_packages(py_packages[1:200])
 install_python_packages(py_packages[2540:3500])  # install the rest in batches of 60
 install_python_packages(py_packages[2601:2700])  # install the rest in batches
@@ -455,9 +456,9 @@ install_python_packages(py_packages[2601:2700])  # install the rest in batches
 
 
 # # installed in the top 5000 packages
-sum((py_packages[1:100] %in% have_now))
+sum((py_packages[1:5000] %in% have_now))
 # List packages that are not installed, among top 100
-py_packages[!(py_packages[1:500] %in% have_now)]
+py_packages[!(py_packages[501:1000] %in% have_now)]
 
 
 
@@ -485,7 +486,17 @@ test_python_package <- function(pkg_name) {
 }
 
 
-
+# test a list of packages
+test_packages <- c("numpy", "pandas", "matplotlib", "scikit-learn", "seaborn", "statsmodels", "scipy")
+results <- sapply(test_packages, test_python_package)
+# Print the uncessful packages
+if (any(!results)) {
+  message("The following packages failed to load:")
+  failed_packages <- test_packages[!results]
+  message(paste(failed_packages, collapse = ", "))
+} else {
+  message("All Python packages loaded successfully.")
+}
 
 
 
