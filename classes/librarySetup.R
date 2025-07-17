@@ -370,7 +370,7 @@ download.file(csv_url, tmpfile, mode = "wb")
 py_packages <- read_csv(tmpfile, show_col_types = FALSE) %>% 
   pull(project)
 
-targets <- py_packages[21:50]  # top 2000 packages
+#targets <- py_packages[21:50]  # top 2000 packages
 
 
 install_python_packages <- function(targets, env = "r-reticulate", batch_size = 5) {
@@ -405,8 +405,14 @@ install_python_packages <- function(targets, env = "r-reticulate", batch_size = 
           py_install(todo,
                      envname     = env,
                      pip         = TRUE,
-                     pip_options = c("--quiet", "--no-input",
-                                     "--disable-pip-version-check"))
+                     pip_options = c(
+                      #"--quiet", 
+                       "--no-input",
+                       "--disable-pip-version-check",
+                       "--only-binary=:all:"
+                      ),
+                      pip_ignore_installed = TRUE
+          )
         },
         error = function(e) {
           warning("  !! pip error: ", conditionMessage(e))
@@ -441,9 +447,49 @@ install_python_packages <- function(targets, env = "r-reticulate", batch_size = 
   }
 }
 
+install_python_packages(py_packages[10000:10002], batch_size = 5)  # install the rest in batches of 60
 install_python_packages(py_packages[1:200])
 install_python_packages(py_packages[2540:3500])  # install the rest in batches of 60
 install_python_packages(py_packages[2601:2700])  # install the rest in batches
 
-install_python_packages(py_packages[3000:10000])  # install the rest in batches of 60
+
+
+# # installed in the top 5000 packages
+sum((py_packages[1:100] %in% have_now))
+# List packages that are not installed, among top 100
+py_packages[!(py_packages[1:500] %in% have_now)]
+
+
+
+
+#--------Test installed packages-------------------
+
+library(reticulate)
+env <- "r-reticulate"
+use_condaenv(env, required = TRUE)
+# Function to test if a Python package is importable
+test_python_package <- function(pkg_name) {
+
+  
+  # Try importing the package
+  success <- tryCatch({
+    import(pkg_name)
+    message(sprintf("✅ Package '%s' loaded successfully.", pkg_name))
+    TRUE
+  }, error = function(e) {
+    message(sprintf("❌ Failed to load package '%s': %s", pkg_name, e$message))
+    FALSE
+  })
+  
+  return(success)
+}
+
+
+
+
+
+
+
+
+
 }
