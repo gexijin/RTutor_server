@@ -1,4 +1,2 @@
-#!/bin/sh
-echo $(date) >> /home/ubuntu/log.txt
-sudo docker-compose -f /home/ubuntu/RTutor_server/docker-compose.yml down
-sudo docker-compose -f /home/ubuntu/RTutor_server/docker-compose.yml up -d --scale webapp=30
+sudo docker stop nginx && sudo docker rm nginx
+sudo docker run -d  --name nginx  -p 80:80 -p 443:443  nginx
