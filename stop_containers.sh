@@ -1,12 +1,7 @@
 #!/bin/bash
-if [ -z "$1" ]; then
-  echo "Usage: $0 <number_of_containers>"
-  exit 1
-fi
-
-# Loop to create and start Docker containers based on the passed argument
-for i in $(seq 1 $1)
+n=${1:-1}
+for i in $(seq 1 $n)
 do
-    sudo docker stop "rt$i"
-    sudo docker rm "rt$i"
+    sudo docker stop "rt_uiuc$i"
+    sudo docker rm "rt_uiuc$i"
 done

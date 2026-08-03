@@ -80,7 +80,7 @@ list_packages <- c(
 
 install.packages(list_packages)
 
-remotes::install_github("gexijin/RTutor", upgrade = "never")
+remotes::install_github("gexijin/RTutor@uiuc_main", upgrade = "never")
 
 if(0){  # Run these manually
 
