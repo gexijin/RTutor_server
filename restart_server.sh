@@ -1,3 +1,4 @@
+sudo docker build ./nginx/. -t nginx --pull  
 sudo docker stop nginx && sudo docker rm nginx
 docker run \
   -d \
