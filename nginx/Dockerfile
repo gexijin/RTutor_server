@@ -17,4 +17,8 @@ RUN chown nginx /etc/pki/nginx/server.crt /etc/pki/nginx/private/server.key
 COPY uiuc_fullchain.pem /etc/pki/nginx/uiuc_server.crt
 COPY uiuc_privkey.pem /etc/pki/nginx/private/uiuc_server.key
 RUN chown nginx /etc/pki/nginx/uiuc_server.crt /etc/pki/nginx/private/uiuc_server.key
+# for *.RTutor.ai RTutor.ai
+COPY wild_fullchain.pem /etc/pki/nginx/wildcard.crt
+COPY wild_privkey.pem /etc/pki/nginx/private/wildcard.key
+RUN chown nginx /etc/pki/nginx/wildcard.crt /etc/pki/nginx/private/wildcard.key
 
