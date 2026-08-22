@@ -2,23 +2,13 @@
 # More detail about sticky module: https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/overview
 FROM nginx:1.31-alpine
 
-# File Author / Maintainer
-MAINTAINER Ge Lab
 
 # Copy custom configuration file from the current directory
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # for HTTPS
-RUN mkdir -p /etc/pki/nginx/private
-COPY fullchain.pem /etc/pki/nginx/server.crt
-COPY privkey.pem /etc/pki/nginx/private/server.key
-RUN chown nginx /etc/pki/nginx/server.crt /etc/pki/nginx/private/server.key
-# for UIUC.RTutor.ai
-COPY uiuc_fullchain.pem /etc/pki/nginx/uiuc_server.crt
-COPY uiuc_privkey.pem /etc/pki/nginx/private/uiuc_server.key
-RUN chown nginx /etc/pki/nginx/uiuc_server.crt /etc/pki/nginx/private/uiuc_server.key
 # for *.RTutor.ai RTutor.ai
-COPY wild_fullchain.pem /etc/pki/nginx/wildcard.crt
-COPY wild_privkey.pem /etc/pki/nginx/private/wildcard.key
+COPY  /etc/letsencrypt/live/rtutor.ai/fullchain.pem /etc/pki/nginx/wildcard.crt
+COPY  /etc/letsencrypt/live/rtutor.ai/privkey.pem /etc/pki/nginx/private/wildcard.key
 RUN chown nginx /etc/pki/nginx/wildcard.crt /etc/pki/nginx/private/wildcard.key
 
